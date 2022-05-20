@@ -33,7 +33,7 @@ class LinkLogin {
 			__METHOD__,
 			[],
 			[
-				'user' => [ 'INNER JOIN', [ 'user.user_id=user_groups.ug_user'] ]
+				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
 			]
 		);
 
@@ -99,7 +99,7 @@ class LinkLogin {
 	 */
 	public static function getUserFromToken( $token ) {
 		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
-		
+
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
@@ -115,7 +115,7 @@ class LinkLogin {
 			__METHOD__,
 			[],
 			[
-				'user' => [ 'INNER JOIN', [ 'user.user_id=user_groups.ug_user'] ]
+				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
 			]
 		);
 
