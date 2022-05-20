@@ -21,7 +21,7 @@ class LinkLogin {
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [ 
-			"TRIM('\0' FROM user_email_token)=''",
+			"(TRIM('\0' FROM user_email_token)='' OR user_email_token is null)",
 			'user_email_token_expires' => null,
 			'user_email' => '',
 			'ug_group' => $groups,
@@ -142,7 +142,7 @@ class LinkLogin {
 		$conds = [
 			'user_id' => $groupUsers,
 			'user_email' => '',
-			"TRIM('\0' FROM user_email_token)!=''",
+			"(TRIM('\0' FROM user_email_token)!='' OR not user_email_token is null)",
 			'user_email_token_expires' => null,
 
 		];
