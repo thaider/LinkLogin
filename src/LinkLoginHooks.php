@@ -32,6 +32,8 @@ class LinkLoginHooks {
 
 		$user->setId( $newUserId );
 		$user->loadFromId();
+		$user->saveSettings();
+		$user->setCookies();
 		\Hooks::run( 'UserLoginComplete', [ &$user, "" ] );
 
 		return true;
