@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": []
+	},
+	"linklogin-desc": "Allows to automatically authenticate users with a hash in a link",
+	"linklogin-name": "LinkLogin",
+	"populateloginlinks": "Populate Login Links",
+	"action-populateloginlinks": "populate the user table with login links"
+}

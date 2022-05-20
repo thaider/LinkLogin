@@ -1,0 +1,45 @@
+{
+	"name": "LinkLogin",
+	"version": "0.1",
+	"author": [
+		"Tobias Haider"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:LinkLogin",
+	"descriptionmsg": "linklogin-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "other",
+	"requires": {
+		"MediaWiki": ">= 1.35.0"
+	},
+	"MessagesDirs": {
+		"LinkLogin": [
+			"i18n"
+		]
+	},
+	"ExtensionMessagesFiles": {
+		"LinkLoginAlias": "LinkLogin.i18n.alias.php"
+	},
+	"AutoloadNamespaces": {
+		"MediaWiki\\Extension\\LinkLogin\\": "src/"
+	},
+	"Hooks": {
+		"UserLoadAfterLoadFromSession": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onUserLoadAfterLoadFromSession"
+	},
+	"SpecialPages": {
+		"PopulateLoginLinks": "MediaWiki\\Extension\\LinkLogin\\SpecialPopulateLoginLinks"
+	},
+	"config": {
+		"LinkLoginGroups": {
+			"value": []
+		}
+	},
+	"AvailableRights": [
+		"populateloginlinks"
+	],
+	"GroupPermissions": {
+		"sysop": {
+			"populateloginlinks": true
+		}
+	},
+	"manifest_version": 2
+}
