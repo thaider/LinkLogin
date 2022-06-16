@@ -104,11 +104,13 @@ class SpecialMailings extends SpecialPage {
 
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
 
+		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$output->addHTML('<div class="text-center"><a href="' . $special->getLocalURL() . '">' . wfMessage('linklogin-overview')->text() . '</a></div>');
 
 		$sentCount = 0;
 		$unsentCount = 0;
 		$newsentCount = 0;
+		$sendableCount = 0;
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -154,13 +156,16 @@ class SpecialMailings extends SpecialPage {
 			} else {
 				$recipients_unsent[] = $recipient;
 				$unsentCount++;
+				if( $recipient->email ) {
+					$sendableCount++;
+				}
 			}
 		}
 
 		$output->addWikiTextAsInterface( $newsentCount . ' neu verschickt');
 		$output->addWikiTextAsInterface( $sentCount . ' ingesamt verschickt');
 		if( $unsentCount > 0 ) {
-			$output->addWikiTextAsInterface( $unsentCount . ' (weitere) Empfänger*innen verfügbar:');
+			$output->addWikiTextAsInterface( $unsentCount . ' (weitere) Empfänger*innen verfügbar (' . $sendableCount . ' versendbar):');
 
 			// Start form
 			$output->addHTML( Xml::element( 'form', [

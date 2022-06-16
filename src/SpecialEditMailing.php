@@ -17,6 +17,7 @@ class SpecialEditMailing extends SpecialPage {
 
 		$request = $this->getRequest();
 		$output = $this->getOutput();
+		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$this->setHeaders();
 
 		if( isset( $par ) ) {
