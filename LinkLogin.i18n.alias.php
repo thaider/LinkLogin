@@ -13,4 +13,6 @@ $specialPageAliases = [];
  */
 $specialPageAliases['en'] = [
 	'PopulateLoginLinks' => [ 'PopulateLoginLinks', 'Populate Login Links' ],
+    'Mailings' => [ 'Mailings' ],
+    'EditMailing' => [ 'EditMailing', 'Edit Mailing' ],
 ];

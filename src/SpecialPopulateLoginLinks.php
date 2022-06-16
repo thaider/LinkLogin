@@ -16,20 +16,20 @@ class SpecialPopulateLoginLinks extends \SpecialPage {
 		$output = $this->getOutput();
 		$this->setHeaders();
 
-		$populatedFeedback = '<code>user_email_token</code> fields for ' . $populatedCount . ' users have been populated.';
+		$populatedFeedback = wfMessage('linklogin-populated', $populatedCount)->text();
 		$output->addWikiTextAsInterface( $populatedFeedback );
 
-
-		$output->addWikiTextAsInterface( '=== List of all users with hashes ===' );
+		$list_heading = wfMessage('linklogin-list-heading')->text();
+		$output->addWikiTextAsInterface( '===' . $list_heading . '===' );
 
 		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
 		$groupUsers = LinkLogin::getLinkLoginGroupUsers();
 
-		$output->addWikiTextAsInterface( count( $groupUsers ) . ' users are in the groups defined by <code>$LinkLoginGroups</code> (' . join(', ', $groups) . ').');
+		$output->addWikiMsg( 'linklogin-groupcount', count( $groupUsers ), join(', ', $groups) );
 
 		$users = LinkLogin::getLinkLoginUsers();
-		if( count($users) > 0 ) {
-			$usersTable = count($users) . ' of them meet all the conditions and have a hash defined:';
+		if( ( $usersCount = $users->numRows() ) > 0 ) {
+			$usersTable = wfMessage('linklogin-conditioncount', $usersCount )->text();
 			$usersTable .= '<table class="table table-bordered table-sm"><tr><th>Name</th><th>Hash</th></tr>';
 			foreach( $users as $user ) {
 				$usersTable .= '<tr><td>' . $user->user_name . '</td><td>' . $user->user_email_token . '</td></tr>';

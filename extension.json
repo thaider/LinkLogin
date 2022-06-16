@@ -9,7 +9,10 @@
 	"license-name": "GPL-2.0-or-later",
 	"type": "other",
 	"requires": {
-		"MediaWiki": ">= 1.35.0"
+		"MediaWiki": ">= 1.35.0",
+		"extensions": {
+			"EditUser": "*"
+		}
 	},
 	"MessagesDirs": {
 		"LinkLogin": [
@@ -23,22 +26,35 @@
 		"MediaWiki\\Extension\\LinkLogin\\": "src/"
 	},
 	"Hooks": {
-		"UserLoadAfterLoadFromSession": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onUserLoadAfterLoadFromSession"
+		"GetPreferences": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onGetPreferences",
+		"UserLoadAfterLoadFromSession": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onUserLoadAfterLoadFromSession",
+		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates"
 	},
 	"SpecialPages": {
-		"PopulateLoginLinks": "MediaWiki\\Extension\\LinkLogin\\SpecialPopulateLoginLinks"
+		"PopulateLoginLinks": "MediaWiki\\Extension\\LinkLogin\\SpecialPopulateLoginLinks",
+		"Mailings": "MediaWiki\\Extension\\LinkLogin\\SpecialMailings",
+		"EditMailing": "MediaWiki\\Extension\\LinkLogin\\SpecialEditMailing"
 	},
 	"config": {
 		"LinkLoginGroups": {
 			"value": []
+		},
+		"LinkLoginPreferences": {
+			"value" : {
+				"email": {
+					"type": "text"
+				}
+			}
 		}
 	},
 	"AvailableRights": [
-		"populateloginlinks"
+		"populateloginlinks",
+		"mailings"
 	],
 	"GroupPermissions": {
 		"sysop": {
-			"populateloginlinks": true
+			"populateloginlinks": true,
+			"mailings": true
 		}
 	},
 	"manifest_version": 2

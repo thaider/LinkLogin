@@ -65,6 +65,8 @@ class LinkLogin {
 	 * create token and save it
 	 * 
 	 * @return String Token
+	 * 
+	 * @todo implement
 	 */
 	public static function createLoginToken( $user ) {
 		die('not yet implemented');
@@ -124,14 +126,57 @@ class LinkLogin {
 
 
 	/**
-	 * Get a list of all users who 
+	 * Check, if a user can login with a link, i.e. they
 	 * - are in one of the LinkLogin groups
 	 * - have a non empty user_email_token field and user_email_token_expires set to null
 	 * 
+	 * @param Integer $user ID of the user to check
+	 * @param Array $groups specify link login groups to use
+	 * 
 	 * @return Wikimedia\Rdbms\ResultWrapper|Array Query Result with user_name and user_email_token
 	 */
-	public static function getLinkLoginUsers() {
-		$groupUsers = self::getLinkLoginGroupUsers();	
+	public static function isLinkLoginUser($user, $groups = false) {
+		$groupUsers = self::getLinkLoginGroupUsers($groups);	
+
+		if( count( $groupUsers ) == 0 ) {
+			return false;
+		}
+
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$conds = [
+			'user_id' => $user,
+			'user_email' => '',
+			"(TRIM('\0' FROM user_email_token)!='' OR not user_email_token is null)",
+			'user_email_token_expires' => null,
+
+		];
+		$isLinkLoginUser = $dbr->select(
+			'user',
+			['user_name','user_email_token'],
+			$conds,
+			__METHOD__,
+			[
+				'DISTINCT' => true,
+				'ORDER BY' => 'user_name'
+			]
+		) ?: [];
+
+		return $isLinkLoginUser->numRows() > 0;
+	}
+
+
+	/**
+	 * Get a list of all users who can login with a link, i.e. they
+	 * - are in one of the LinkLogin groups
+	 * - have a non empty user_email_token field and user_email_token_expires set to null
+	 * 
+	 * @param Array $groups specify link login groups to use
+	 * 
+	 * @return Wikimedia\Rdbms\ResultWrapper|Array Query Result with user_name and user_email_token
+	 */
+	public static function getLinkLoginUsers($groups = false) {
+		$groupUsers = self::getLinkLoginGroupUsers($groups);	
 
 		if( count( $groupUsers ) == 0 ) {
 			return [];
@@ -153,8 +198,7 @@ class LinkLogin {
 			__METHOD__,
 			[
 				'DISTINCT' => true,
-				'ORDER BY' => 'user_name',
-				'LIMIT' => $limit,
+				'ORDER BY' => 'user_name'
 			]
 		) ?: [];
 		
@@ -167,10 +211,16 @@ class LinkLogin {
 	 * 
 	 * Code inspired by User::findUsersByGroup()
 	 * 
+	 * @param Array $groups specify link login groups to use
+	 * 
 	 * @return Array User IDs
 	 */
-	public static function getLinkLoginGroupUsers() {
-		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+	public static function getLinkLoginGroupUsers($groups = false) {
+		if( !$groups ) {
+			$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+		} else {
+			$groups = array_intersect( array_unique( (array)$GLOBALS['wgLinkLoginGroups'] ), $groups );
+		}
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -184,8 +234,7 @@ class LinkLogin {
 			__METHOD__,
 			[
 				'DISTINCT' => true,
-				'ORDER BY' => 'ug_user',
-				'LIMIT' => $limit,
+				'ORDER BY' => 'ug_user'
 			]
 		) ?: [];
 		return $groupUsers;
