@@ -23,6 +23,7 @@
 	"linklogin-archive": "Archive Mailing",
 	"linklogin-send": "Send Mailing",
 	"linklogin-date-sent": "Send Date",
+	"linklogin-created": "Created",
 	"linklogin-mark-sent": "Manually Mark As Sent",
 	"linklogin-mark-unsent": "Manually Mark As Unsent",
 	"linklogin-subject": "Subject",

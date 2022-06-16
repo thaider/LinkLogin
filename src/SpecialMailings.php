@@ -33,6 +33,7 @@ class SpecialMailings extends SpecialPage {
 	function showOverview() {
 		$output = $this->getOutput();
 
+		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$output->addWikiTextAsInterface('[[Special:EditMailing|' . wfMessage('linklogin-create')->text() . ']]');
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -40,12 +41,12 @@ class SpecialMailings extends SpecialPage {
 		$conds = [];
 		$mailings = $dbr->select(
 			'll_mailing',
-			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage'],
+			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'],
 			$conds
 		) ?: [];
 
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
-		foreach( [ 'timestamp', 'title', 'subject', 'template', 'loginpage', 'group' ] as $header ) {
+		foreach( [ 'created', 'title', 'subject', 'template', 'loginpage', 'group' ] as $header ) {
 			$output->addHTML('<th>' . wfMessage('linklogin-' . $header) . '</th>');
 		}
 		$output->addHTML('<th class="semorg-showedit" style="width:100px"></th></tr>');
@@ -53,8 +54,9 @@ class SpecialMailings extends SpecialPage {
 		$special = SpecialPage::getTitleFor( 'Mailings' );
 		$specialEdit = SpecialPage::getTitleFor( 'EditMailing' );
 		foreach( $mailings as $row ) {
+			$creator = User::newFromId( $row->ll_mailing_user );
 			$output->addHTML('<tr>');
-			$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $row->ll_mailing_timestamp ) . '</td>');
+			$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $row->ll_mailing_timestamp ) . '<div style="font-size:small">by ' . $creator->getName() . '</div></td>');
 			$output->addHTML('<td>' . $row->ll_mailing_title . '</td>');
 			$output->addHTML('<td>' . $row->ll_mailing_subject . '</td>');
 			$output->addHTML('<td>');

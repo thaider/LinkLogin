@@ -25,7 +25,7 @@ class SpecialEditMailing extends SpecialPage {
 			$conds = ['ll_mailing_id' => $par];
 			$mailing = $dbr->selectRow(
 				'll_mailing',
-				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_content'],
+				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_loginpage','ll_mailing_template'],
 				$conds
 			) ?: [];
 		}
@@ -78,7 +78,15 @@ class SpecialEditMailing extends SpecialPage {
 	    ];
 		
 		if( $par ) {
-			// set default values
+			foreach( $formDescriptor as $key => $element ) {
+				if( property_exists( $mailing, 'll_mailing_' . $key ) ) {
+					$formDescriptor[$key]['default'] = $mailing->{'ll_mailing_' . $key};
+				}
+			}
+			$formDescriptor['mailing'] = [
+				'class' => 'HTMLHiddenField',
+				'default' => $mailing->ll_mailing_id,
+			];
 		}
 
 	    $htmlForm = HTMLForm::factory( 'ooui', $formDescriptor, $this->getContext() );
