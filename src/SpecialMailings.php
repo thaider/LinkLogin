@@ -91,7 +91,7 @@ class SpecialMailings extends SpecialPage {
 		}
 		$output->addHTML('</table>');
 
-		$output->addWikiTextAsInterface('Tabelle der archivierten Mailings');
+		//$output->addWikiTextAsInterface('Tabelle der archivierten Mailings');
 	}
 
 
@@ -122,6 +122,12 @@ class SpecialMailings extends SpecialPage {
 		if ( $request->getText( 'll-send', false ) ) {
 			$newsentCount = $this->send( $mailing, $recipients );
 		}
+		if( $request->getText( 'll-mark-sent', false ) ) {
+			$this->markAsSent( $mailing, $recipients );
+		}
+		if( $request->getText( 'll-mark-unsent', false ) ) {
+			$this->markAsUnsent( $mailing, $recipients );
+		}
 
 		$output->addWikiTextAsInterface( '\'\'\'' . $mailing->ll_mailing_title . '\'\'\' versenden');
 
@@ -137,13 +143,13 @@ class SpecialMailings extends SpecialPage {
 		foreach( $recipients as $recipient ) {
 			$user = User::newFromName( $recipient->user_name );
 			$recipient->user = $user;
+			foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+				$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
+			}
 			if( in_array($user->getId(), $sent) ) {
 				$recipients_sent[] = $recipient;
 				$sentCount++;
 			} else {
-				foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
-					$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
-				}
 				$recipients_unsent[] = $recipient;
 				$unsentCount++;
 			}
@@ -156,11 +162,9 @@ class SpecialMailings extends SpecialPage {
 
 			// Start form
 			$output->addHTML( Xml::element( 'form', [
-				'class'  => 'EmailPage',
 				'action' => $special->getLocalURL() . '/' . $par,
 				'method' => 'POST'
 			], null ) );
-
 
 			// Table of users without mailing
 			$output->addHTML('<table class="table table-bordered table-sm"><tr>');
@@ -209,6 +213,71 @@ class SpecialMailings extends SpecialPage {
 					'type' => 'submit', 
 					'name' => 'll-send', 
 					'value' => wfMessage( 'linklogin-send' )->text() 
+				] )
+			 . '&#160;' );
+			$output->addHTML( Xml::element( 'input', [ 
+					'type' => 'submit', 
+					'name' => 'll-mark-sent', 
+					'value' => wfMessage( 'linklogin-mark-sent' )->text() 
+				] )
+			 . '&#160;' );
+			$output->addHTML( "</form>" );
+
+		}
+
+		if( $sentCount > 0 ) {
+			$output->addWikiTextAsInterface( $sentCount . ' bereits verschickt:');
+
+			// Start form
+			$output->addHTML( Xml::element( 'form', [
+				'action' => $special->getLocalURL() . '/' . $par,
+				'method' => 'POST'
+			], null ) );
+
+			// Table of users with mailing
+			$output->addHTML('<table class="table table-bordered table-sm"><tr>');
+			foreach( [ 'mark-unsent', 'username', 'date-sent' ] as $header ) {
+				$output->addHTML('<th>' . wfMessage('linklogin-' . $header) . '</th>');
+			}
+			$output->addHTML('</tr>');
+
+			foreach( $recipients_sent as $recipient ) {
+				$output->addHTML( '<tr>' );
+				$output->addHTML( '<td class="text-center">' );
+				if( $recipient->email ) {
+					$output->addHTML( Xml::element( 'input', [ 
+						'type' => 'checkbox', 
+						'name' => 'll-recipient[]',
+						'value' => $recipient->user->getId(),
+						//'checked' => true
+					] ) );
+				}
+				$output->addHTML( '</td>' );
+				$output->addHTML( '<td>' );
+				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
+				$output->addHTML( '</td>' );
+
+				$conds = [
+					'll_mailinglog_mailing' => $par,
+					'll_mailinglog_user' => $recipient->user->getId(),
+				];
+				$send_date = $dbr->selectField(
+						'll_mailinglog',
+						'll_mailinglog_timestamp',
+						$conds
+					) ?: [];
+
+				$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $send_date ) . '</td>');
+
+				$output->addHTML( '</tr>' );
+			}
+			$output->addHTML('</table>');
+
+			// Render submit button to send mailing
+			$output->addHTML( Xml::element( 'input', [ 
+					'type' => 'submit', 
+					'name' => 'll-mark-unsent', 
+					'value' => wfMessage( 'linklogin-mark-unsent' )->text() 
 				] )
 			 . '&#160;' );
 			$output->addHTML( "</form>" );
@@ -293,6 +362,81 @@ class SpecialMailings extends SpecialPage {
 		}
 
 		return $counter;
+	}
+
+
+	/**
+	 * Mark mailing as sent for specific users
+	 * 
+	 * @return Integer Number of marked users
+	 */
+	function markAsSent( $mailing, $recipients ) {
+		$request = $this->getRequest();
+
+		$selected_recipients = $request->getArray('ll-recipient');
+
+		if( is_null( $selected_recipients ) ) {
+			return 0;
+		}
+
+		$counter = 0;
+
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$conds = ['ll_mailinglog_mailing' => $mailing->ll_mailing_id];
+		$sent = $dbr->selectFieldValues(
+			'll_mailinglog',
+			'll_mailinglog_user',
+			$conds
+		) ?: [];
+
+		foreach( $recipients as $recipient ) {
+			if( in_array( $recipient->user_name, $selected_recipients ) ) {
+				$user = User::newFromName( $recipient->user_name );
+				$dbw = $lb->getConnectionRef( DB_PRIMARY );
+				$res = $dbw->insert( 
+					'll_mailinglog',
+					[
+						'll_mailinglog_mailing' => $mailing->ll_mailing_id,
+						'll_mailinglog_user' => $user->getId(),
+						'll_mailinglog_timestamp' => time(),
+					]);
+
+				$counter++;
+			}
+		}
+
+		return $counter;
+	}
+
+
+	/**
+	 * Mark mailing as unsent for specific users
+	 * 
+	 * @return Integer Number of unmarked users
+	 */
+	function markAsUnsent( $mailing, $recipients ) {
+		$request = $this->getRequest();
+
+		$selected_recipients = $request->getArray('ll-recipient');
+
+		if( is_null( $selected_recipients ) ) {
+			return 0;
+		}
+
+		$counter = 0;
+
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+		$conds = [
+			'll_mailinglog_mailing' => $mailing->ll_mailing_id,
+			'll_mailinglog_user' => $selected_recipients
+		];
+		$res = $dbw->delete(
+			'll_mailinglog',
+			$conds
+		);
+		return $dbw->affectedRows();
 	}
 
 
