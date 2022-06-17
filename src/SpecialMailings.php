@@ -187,7 +187,7 @@ class SpecialMailings extends SpecialPage {
 		if( $unsentCount > 0 ) {
 			$columns = wfMessage('linklogin-columns')->exists() ? explode(',',wfMessage('linklogin-columns')->text()) : array_keys( $GLOBALS['wgLinkLoginPreferences'] );
 
-			$output->addWikiTextAsInterface( $unsentCount . ' (weitere) Empfänger*innen verfügbar (' . $sendableCount . ' versendbar):');
+			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3">' . $unsentCount . ' (weitere) Empfänger*innen verfügbar (' . $sendableCount . ' versendbar): </h3>');
 
 			// Start form
 			$output->addHTML( Xml::element( 'form', [
@@ -266,9 +266,10 @@ class SpecialMailings extends SpecialPage {
 		}
 
 		if( $sentCount > 0 ) {
-			$output->addWikiTextAsInterface( $sentCount . ' bereits verschickt:');
+			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3"><div class="float-right" style="font-size:smaller">{{#semorg-collapse:ll-sent-list}}</div>' . $sentCount . ' bereits verschickt: </h3>');
 
 			// Start form
+			$output->addHTML('<div class="collapse" id="ll-sent-list">');
 			$output->addHTML( Xml::element( 'form', [
 				'action' => $special->getLocalURL() . '/' . $par,
 				'method' => 'POST'
@@ -277,7 +278,7 @@ class SpecialMailings extends SpecialPage {
 			// Table of users with mailing
 			$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 			foreach( [ 'mark-unsent', 'username', 'date-sent' ] as $header ) {
-				$output->addHTML('<th>' . wfMessage('linklogin-' . $header) . '</th>');
+				$output->addHTML('<th ' . ( $header == 'mark-unsent' ? 'class="text-center"' : '' ) . '>' . wfMessage('linklogin-' . $header) . '</th>');
 			}
 			$output->addHTML('</tr>');
 
@@ -320,7 +321,7 @@ class SpecialMailings extends SpecialPage {
 					'value' => wfMessage( 'linklogin-mark-unsent' )->text() 
 				] )
 			 . '&#160;' );
-			$output->addHTML( "</form>" );
+			$output->addHTML( "</form></div>" );
 		}
 	}
 
