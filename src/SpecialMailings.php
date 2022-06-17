@@ -178,10 +178,8 @@ class SpecialMailings extends SpecialPage {
 		}
 
 		if( count( $only ) > 0 ) {
-			$output->addWikiTextAsInterface( 'nur diese ' . count( $only ) . ' User berücksichtigen: ' .  join( ',', $only ) );
-		}
-		if( $notincludedCount > 0 ) {
-			$output->addWikiTextAsInterface( $notincludedCount . ' User wurden daher nicht berücksichtigt' );
+			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-only}}</div>nur diese ' . count( $only ) . ' User berücksichtigen' . ( $notincludedCount > 0 ? ( ' (' . $notincludedCount . ' User wurden daher nicht berücksichtigt)' ) : '' ) . ':' );
+			$output->addHTML( '<div class="collapse border p-3 m-3" id="ll-only">' . join( ',', $only ) . '</div>' );
 		}
 
 		$output->addWikiTextAsInterface( $newsentCount . ' neu verschickt');
@@ -200,10 +198,10 @@ class SpecialMailings extends SpecialPage {
 			// Table of users without mailing
 			$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 			foreach( [ 'recipient', 'username' ] as $header ) {
-				$output->addHTML('<th>' . wfMessage('linklogin-' . $header) . '</th>');
+				$output->addHTML('<th' . ( $header == 'recipient' ? ' class="text-center"' : '' ) . '>' . wfMessage('linklogin-' . $header) . '</th>');
 			}
 			foreach( $columns as $column ) {
-				$output->addHTML('<th>&lt;' . $column . '&gt;</th>');
+				$output->addHTML('<th>&lt;' . ucfirst( $column ) . '&gt;</th>');
 			}
 			$output->addHTML('</tr>');
 
@@ -223,7 +221,17 @@ class SpecialMailings extends SpecialPage {
 				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
 				$output->addHTML( '</td>' );
 				foreach( $columns as $column ) {
-					$output->addHTML( '<td>' . $recipient->{$column} . '</td>' );
+					if( property_exists( $recipient, $column ) ) {
+						$output->addHTML( '<td>' . $recipient->{$column} . '</td>' );
+					} else {
+						$params = '';
+						foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+							$params .= '|' . $preference . '=' . $recipient->{$preference};
+						}
+						$output->addHTML('<td>');
+						$output->addWikiTextAsInterface( '<div>{{ll-' . $column . $params . '}}</div>' );
+						$output->addHTML('</td>');
+					}
 				}
 				$output->addHTML( '</tr>' );
 			}
@@ -232,8 +240,8 @@ class SpecialMailings extends SpecialPage {
 
 			// Example
 			$example_user = reset($recipients_unsent );
-			$output->addWikiTextAsInterface( 'Example output for ' . $example_user->user_name . ' using template [[Template:' . $mailing->ll_mailing_template . '|' . $mailing->ll_mailing_template . ']]:');
-			$output->addHTML('<div class="border p-3 m-3">');
+			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-example}}</div>Example output for ' . $example_user->user_name . ' using template [[Template:' . $mailing->ll_mailing_template . '|' . $mailing->ll_mailing_template . ']]:');
+			$output->addHTML('<div class="border p-3 m-3 collapse" id="ll-example">');
 			$bodyWikiText = $this->createBody( $example_user, $mailing );
 			$output->addWikiTextAsInterface( $bodyWikiText );
 			$output->addHTML( '<br>---<br>' . $mailing->ll_mailing_signature );
