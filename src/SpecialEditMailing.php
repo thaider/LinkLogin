@@ -6,6 +6,7 @@ use \MediaWiki\MediaWikiServices;
 use SpecialPage;
 use Xml;
 use HTMLForm;
+use Title;
 
 class SpecialEditMailing extends SpecialPage {
 	function __construct() {
@@ -17,6 +18,7 @@ class SpecialEditMailing extends SpecialPage {
 
 		$request = $this->getRequest();
 		$output = $this->getOutput();
+		$output->setPageTitle('mailings');
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$this->setHeaders();
 
@@ -26,7 +28,7 @@ class SpecialEditMailing extends SpecialPage {
 			$conds = ['ll_mailing_id' => $par];
 			$mailing = $dbr->selectRow(
 				'll_mailing',
-				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_loginpage','ll_mailing_template'],
+				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_loginpage','ll_mailing_template','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only'],
 				$conds
 			) ?: [];
 		}
@@ -43,36 +45,53 @@ class SpecialEditMailing extends SpecialPage {
 	        'title' => [
 	            'label-message' => 'linklogin-title',
 	            'help-message' => 'linklogin-title-help',
-	            'class' => 'HTMLTextField',
+	            'type' => 'text',
 	        ],
 	        'group' => [
 	            'label-message' => 'linklogin-group',
 	            'help-message' => 'linklogin-group-help',
 	        	'options' => $groups,
-	        	'class' => 'HTMLRadioField',
+	        	'type' => 'radio',
 	        	'default' => 'test',
 	        ],
 	        'subject' => [
 	            'label-message' => 'linklogin-subject',
 	            'help-message' => 'linklogin-subject-help',
-	            'class' => 'HTMLTextField',
+	            'type' => 'text',
 	        ],
 	        'template' => [
 	            'label-message' => 'linklogin-template',
 	            'help-message' => 'linklogin-template-help',
-	            'class' => 'HTMLTextField',
+	            'type' => 'text',
 	        ],
 	        'loginpage' => [
 	            'label-message' => 'linklogin-loginpage',
 	            'help-message' => 'linklogin-loginpage-help',
-	            'class' => 'HTMLTextField',
+	            'type' => 'text',
+	        ],
+	        'replyto' => [
+	            'label-message' => 'linklogin-replyto',
+	            'help-message' => 'linklogin-replyto-help',
+	            'type' => 'email',
+	        ],
+	        'signature' => [
+	        	'label-message' => 'linklogin-signature',
+	        	'help-message' => 'linklogin-signature-help',
+	        	'type' => 'textarea',
+	        	'rows' => 3,
+	        ],
+	        'only' => [
+	        	'label-message' => 'linklogin-only',
+	        	'help-message' => 'linklogin-only-help',
+	        	'type' => 'textarea',
+	        	'rows' => 3,
 	        ],
 	        'timestamp' => [
-	        	'class' => 'HTMLHiddenField',
+	        	'type' => 'hidden',
 	        	'default' => time()
 	        ],
 	        'user' => [
-	        	'class' => 'HTMLHiddenField',
+	        	'type' => 'hidden',
 	        	'default' => $this->getUser()->getId()
 	        ]
 
@@ -97,6 +116,7 @@ class SpecialEditMailing extends SpecialPage {
     		->show();
 	}
 
+
 	function create( $formData ) {
 		$output = $this->getOutput();
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -111,11 +131,15 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_user' => $formData['user'],
 				'll_mailing_group' => $formData['group'],
 				'll_mailing_timestamp' => $formData['timestamp'],
+				'll_mailing_signature' => $formData['signature'],
+				'll_mailing_replyto' => $formData['replyto'],
+				'll_mailing_only' => $formData['only'],
 			]);
 
 		$specialMailings = SpecialPage::getTitleFor( 'Mailings' );
 		$output->redirect( $specialMailings->getLocalURL() );
 	}
+
 
 	function edit( $formData ) {
 		$output = $this->getOutput();
@@ -132,6 +156,9 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_user' => $formData['user'],
 				'll_mailing_group' => $formData['group'],
 				'll_mailing_timestamp' => $formData['timestamp'],
+				'll_mailing_signature' => $formData['signature'],
+				'll_mailing_replyto' => $formData['replyto'],
+				'll_mailing_only' => $formData['only'],
 			], $conds);
 
 		$specialMailings = SpecialPage::getTitleFor( 'Mailings' );

@@ -77,13 +77,31 @@ class LinkLoginHooks {
 	 */
 	public static function onLoadExtensionSchemaUpdates( DatabaseUpdater $updater ) {
 		$updater->addExtensionTable(
-			'mailing',
-			 __DIR__ . '/../sql/mailing.sql'
+			'll_mailing',
+			__DIR__ . '/../sql/mailing.sql'
 		);
 
 		$updater->addExtensionTable(
-			'mailinglog',
-			 __DIR__ . '/../sql/mailinglog.sql'
+			'll_mailinglog',
+			__DIR__ . '/../sql/mailinglog.sql'
+		);
+
+		$updater->addExtensionField(
+			'll_mailing',
+			'll_mailing_signature',
+			__DIR__ . '/../sql/signature.sql'
+		);
+
+		$updater->addExtensionField(
+			'll_mailing',
+			'll_mailing_replyto',
+			__DIR__ . '/../sql/replyto.sql'
+		);
+
+		$updater->addExtensionField(
+			'll_mailing',
+			'll_mailing_only',
+			__DIR__ . '/../sql/only.sql'
 		);
 	}
 }

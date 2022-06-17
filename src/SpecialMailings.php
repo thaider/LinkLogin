@@ -20,7 +20,7 @@ class SpecialMailings extends SpecialPage {
 		$this->setHeaders();
 		
 		// Mailing Details
-		if( isset( $par ) ) {
+		if( isset( $par ) && $par != '' ) {
 			$this->showDetails( $par );
 			return true;
 		}
@@ -30,6 +30,9 @@ class SpecialMailings extends SpecialPage {
 	}
 
 
+	/**
+	 * Show overview of all mailings
+	 */
 	function showOverview() {
 		$output = $this->getOutput();
 
@@ -97,6 +100,11 @@ class SpecialMailings extends SpecialPage {
 	}
 
 
+	/**
+	 * Show Details for one specific Mailing with the option to send it
+	 * 
+	 * @param Integer $par Mailing ID
+	 */
 	function showDetails( $par ) {
 		$request = $this->getRequest();
 		$output = $this->getOutput();
@@ -111,13 +119,14 @@ class SpecialMailings extends SpecialPage {
 		$unsentCount = 0;
 		$newsentCount = 0;
 		$sendableCount = 0;
+		$notincludedCount = 0;
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = ['ll_mailing_id' => $par];
 		$mailing = $dbr->selectRow(
 			'll_mailing',
-			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_template','ll_mailing_loginpage'],
+			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_template','ll_mailing_loginpage','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only'],
 			$conds
 		) ?: [];
 
@@ -135,6 +144,8 @@ class SpecialMailings extends SpecialPage {
 
 		$output->addWikiTextAsInterface( '\'\'\'' . $mailing->ll_mailing_title . '\'\'\' versenden');
 
+		$only = $this->createOnly( $mailing->ll_mailing_only );
+
 		$conds = ['ll_mailinglog_mailing' => $par];
 		$sent = $dbr->selectFieldValues(
 				'll_mailinglog',
@@ -146,6 +157,10 @@ class SpecialMailings extends SpecialPage {
 		$recipients_unsent = [];
 		foreach( $recipients as $recipient ) {
 			$user = User::newFromName( $recipient->user_name );
+			if( !in_array( $recipient->user_name, $only ) ) {
+				$notincludedCount++;
+				continue;
+			}
 			$recipient->user = $user;
 			foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
 				$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
@@ -160,6 +175,13 @@ class SpecialMailings extends SpecialPage {
 					$sendableCount++;
 				}
 			}
+		}
+
+		if( count( $only ) > 0 ) {
+			$output->addWikiTextAsInterface( 'nur diese ' . count( $only ) . ' User berücksichtigen: ' .  join( ',', $only ) );
+		}
+		if( $notincludedCount > 0 ) {
+			$output->addWikiTextAsInterface( $notincludedCount . ' User wurden daher nicht berücksichtigt' );
 		}
 
 		$output->addWikiTextAsInterface( $newsentCount . ' neu verschickt');
@@ -212,6 +234,7 @@ class SpecialMailings extends SpecialPage {
 			$output->addHTML('<div class="border p-3 m-3">');
 			$bodyWikiText = $this->createBody( $example_user, $mailing );
 			$output->addWikiTextAsInterface( $bodyWikiText );
+			$output->addHTML( '<br>---<br>' . $mailing->ll_mailing_signature );
 			$output->addHTML('</div>');
 
 
@@ -332,9 +355,16 @@ class SpecialMailings extends SpecialPage {
 					$to = [ new MailAddress( $email ) ];
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
 					$subject = $mailing->ll_mailing_title;
+					$options = [];
+					if( $mailing->ll_mailing_replyto ) {
+						$options['replyTo'] = new MailAddress( $mailing->ll_mailing_replyto );
+					}
 
 					$bodyWikiText = $this->createBody( $recipient, $mailing );
 					$bodyHtml = $parser->parse( $bodyWikiText, $title, $opt, true, true )->getText();
+					if( $mailing->ll_mailing_signature ) {
+						$bodyHtml .= '<br>---<br>' . $mailing->ll_mailing_signature;
+					}
 					$bodyText = strip_tags( $bodyHtml );
 					
 					$emailer = MediaWikiServices::getInstance()->getEmailer();
@@ -343,7 +373,8 @@ class SpecialMailings extends SpecialPage {
 						$from,
 						$subject,
 						$bodyText,
-						$bodyHtml
+						$bodyHtml,
+						$options
 					);
 
 					if( !$status->ok ) {
@@ -471,5 +502,27 @@ class SpecialMailings extends SpecialPage {
 		}}';
 
 		return $body;
+	}
+
+
+	/**
+	 * Create list of users that should be considered
+	 * 
+	 * @param $only
+	 * 
+	 * @return Array List of users
+	 */
+	function createOnly( $only ) {
+		$parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
+		$title = SpecialPage::getTitleFor( 'Mailings' );
+		$opt   = new ParserOptions;
+		$only = $parser->parse( $only, $title, $opt, false, true )->getText();
+		$only = strip_tags( $only );
+		$only = explode( ',', $only );
+		foreach( $only as &$user ) {
+			$user = trim( $user );
+		}
+		unset($user);
+		return $only;
 	}
 }
