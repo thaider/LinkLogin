@@ -1,0 +1,1 @@
+ALTER TABLE /*_*/ll_mailing ADD ll_mailing_signature mediumblob NOT NULL;
