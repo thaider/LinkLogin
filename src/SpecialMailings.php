@@ -187,6 +187,8 @@ class SpecialMailings extends SpecialPage {
 		$output->addWikiTextAsInterface( $newsentCount . ' neu verschickt');
 		$output->addWikiTextAsInterface( $sentCount . ' ingesamt verschickt');
 		if( $unsentCount > 0 ) {
+			$columns = wfMessage('linklogin-columns')->exists() ? explode(',',wfMessage('linklogin-columns')->text()) : array_keys( $GLOBALS['wgLinkLoginPreferences'] );
+
 			$output->addWikiTextAsInterface( $unsentCount . ' (weitere) Empfänger*innen verfügbar (' . $sendableCount . ' versendbar):');
 
 			// Start form
@@ -200,8 +202,8 @@ class SpecialMailings extends SpecialPage {
 			foreach( [ 'recipient', 'username' ] as $header ) {
 				$output->addHTML('<th>' . wfMessage('linklogin-' . $header) . '</th>');
 			}
-			foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $header ) {
-				$output->addHTML('<th>&lt;' . $header . '&gt;</th>');
+			foreach( $columns as $column ) {
+				$output->addHTML('<th>&lt;' . $column . '&gt;</th>');
 			}
 			$output->addHTML('</tr>');
 
@@ -220,8 +222,8 @@ class SpecialMailings extends SpecialPage {
 				$output->addHTML( '<td>' );
 				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
 				$output->addHTML( '</td>' );
-				foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
-					$output->addHTML( '<td>' . $recipient->{$preference} . '</td>' );
+				foreach( $columns as $column ) {
+					$output->addHTML( '<td>' . $recipient->{$column} . '</td>' );
 				}
 				$output->addHTML( '</tr>' );
 			}

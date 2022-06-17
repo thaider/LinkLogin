@@ -113,6 +113,8 @@ class SpecialEditMailing extends SpecialPage {
     	$htmlForm
     		->setSubmitCallback( [ $this, isset( $par ) ? 'edit' : 'create' ] )
     		->setSubmitTextMsg( isset( $par ) ? 'linklogin-edit' : 'linklogin-create' )
+    		->showCancel()
+    		->setCancelTarget(SpecialPage::getTitleFor( 'Mailings' ))
     		->show();
 	}
 
