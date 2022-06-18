@@ -365,7 +365,7 @@ class SpecialMailings extends SpecialPage {
 				if( !in_array($user->getId(), $sent) && !is_null( $email ) ) {
 					$to = [ new MailAddress( $email ) ];
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
-					$subject = $mailing->ll_mailing_title;
+					$subject = $mailing->ll_mailing_subject;
 					$options = [];
 					if( $mailing->ll_mailing_replyto ) {
 						$options['replyTo'] = new MailAddress( $mailing->ll_mailing_replyto );
