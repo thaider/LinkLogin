@@ -7,6 +7,8 @@
 	"populateloginlinks": "Populate Login Links",
 	"mailings": "Mailings",
 	"editmailing": "Edit Mailing",
+	"loginlog": "Login Log",
+	"loginattemptlog": "Login Attempt Log",
 	"linklogin-populated": "<code>user_email_token</code> fields for $1 user{{plural:$1| has|s have}} been populated.",
 	"linklogin-list-heading": "List of all users with hashes",
 	"linklogin-groupcount": "$1 {{plural:$1|user is|users are}} in the groups defined by <code>$LinkLoginGroups</code> ($2)",
@@ -40,7 +42,14 @@
 	"linklogin-timestamp": "Creation date",
 	"linklogin-overview": "Overview",
 	"linklogin-dateformat": "Y/m/d",
+	"linklogin-datetimeformat": "Y/m/d H:i:s",
 	"linklogin-pref-email": "E-Mail",
+	"linklogin-loginlog-timestamp": "Date",
+	"linklogin-loginlog-user": "User",
+	"linklogin-loginlog-hash": "Hash",
+	"linklogin-attemptlog-timestamp": "Date",
+	"linklogin-attemptlog-ip": "IP",
+	"linklogin-attemptlog-hash": "Hash",
 	"action-populateloginlinks": "populate the user table with login links",
 	"action-mailings": "create and send mailings"
 }

@@ -11,6 +11,8 @@ use DatabaseUpdater;
 class LinkLoginHooks {
 
 	/**
+	 * Replace preferences with specified contact data if the user is a link login user
+	 * 
 	 * @param User $user
 	 * @param Array $preferences
 	 * 
@@ -39,6 +41,8 @@ class LinkLoginHooks {
 
 
 	/**
+	 * Try to log in user if the query parameter login was set
+	 * 
 	 * @param User $user
 	 * 
 	 * @return void
@@ -55,16 +59,25 @@ class LinkLoginHooks {
 
 		if( !$newUserId ) {
 			wfDebug( "LinkLogin: No matching user for login token" );
+			LinkLogin::logLinkLoginAttempt( $_SERVER['REMOTE_ADDR'], $token );
+			return true;
+		}
+
+		// already logged in as that user
+		if( $newUserId == $user->getId() ) {
 			return true;
 		}
 
 		$newUser = \User::newFromId( $newUserId );
 
+		// log in user
 		$user->setId( $newUserId );
 		$user->loadFromId();
 		$user->saveSettings();
 		$user->setCookies(null, null, true);
 		\Hooks::run( 'UserLoginComplete', [ &$user, "" ] );
+
+		LinkLogin::logLinkLogin( $newUserId, $token );
 
 		return true;
 	}
@@ -102,6 +115,16 @@ class LinkLoginHooks {
 			'll_mailing',
 			'll_mailing_only',
 			__DIR__ . '/../sql/only.sql'
+		);
+
+		$updater->addExtensionTable(
+			'll_attemptlog',
+			__DIR__ . '/../sql/attemptlog.sql'
+		);
+
+		$updater->addExtensionTable(
+			'll_loginlog',
+			__DIR__ . '/../sql/loginlog.sql'
 		);
 	}
 }

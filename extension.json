@@ -33,7 +33,9 @@
 	"SpecialPages": {
 		"PopulateLoginLinks": "MediaWiki\\Extension\\LinkLogin\\SpecialPopulateLoginLinks",
 		"Mailings": "MediaWiki\\Extension\\LinkLogin\\SpecialMailings",
-		"EditMailing": "MediaWiki\\Extension\\LinkLogin\\SpecialEditMailing"
+		"EditMailing": "MediaWiki\\Extension\\LinkLogin\\SpecialEditMailing",
+		"LoginLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginLog",
+		"LoginAttemptLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginAttemptLog"
 	},
 	"config": {
 		"LinkLoginGroups": {
@@ -49,12 +51,14 @@
 	},
 	"AvailableRights": [
 		"populateloginlinks",
-		"mailings"
+		"mailings",
+		"loginlogs"
 	],
 	"GroupPermissions": {
 		"sysop": {
 			"populateloginlinks": true,
-			"mailings": true
+			"mailings": true,
+			"loginlogs": true
 		}
 	},
 	"manifest_version": 2

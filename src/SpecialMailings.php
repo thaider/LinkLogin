@@ -529,6 +529,7 @@ class SpecialMailings extends SpecialPage {
 		$opt   = new ParserOptions;
 		$only = $parser->parse( $only, $title, $opt, false, true )->getText();
 		$only = strip_tags( $only );
+		$only = htmlspecialchars_decode($only);
 		$only = explode( ',', $only );
 		foreach( $only as &$user ) {
 			$user = trim( $user );

@@ -239,4 +239,42 @@ class LinkLogin {
 		) ?: [];
 		return $groupUsers;
 	}
+
+
+	/**
+	 * Log successfull login
+	 * 
+	 * @param Integer $user User ID
+	 * @param String $hash Hash
+	 */
+	public static function logLinkLogin($user, $hash) {
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+		$res = $dbw->insert( 
+			'll_loginlog',
+			[
+				'll_loginlog_user' => $user,
+				'll_loginlog_hash' => $hash,
+				'll_loginlog_timestamp' => time(),
+			]);
+	}
+
+
+	/**
+	 * Log unsuccessfull login attempt
+	 * 
+	 * @param String $ip User's IP address
+	 * @param String $hash Hash
+	 */
+	public static function logLinkLoginAttempt($ip, $hash) {
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+		$res = $dbw->insert( 
+			'll_attemptlog',
+			[
+				'll_attemptlog_ip' => $ip,
+				'll_attemptlog_hash' => $hash,
+				'll_attemptlog_timestamp' => time(),
+			]);
+	}
 }
