@@ -157,7 +157,7 @@ class SpecialMailings extends SpecialPage {
 
 		$sent = [];
 		foreach( $sent_res as $row ) {
-			$sent[$row->ll_mailinglog_timestamp] = $row->ll_mailinglog_user;
+			$sent[$row->ll_mailinglog_user] = $row->ll_mailinglog_timestamp;
 		}
 
 		$recipients_sent = [];
@@ -176,8 +176,8 @@ class SpecialMailings extends SpecialPage {
 			foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
 				$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
 			}
-			if( in_array($user->getId(), $sent) ) {
-				$recipient->ll_mailinglog_timestamp = array_flip($sent)[$user->getId()];
+			if( in_array($user->getId(), array_keys( $sent )) ) {
+				$recipient->ll_mailinglog_timestamp = $sent[$user->getId()];
 				$recipients_sent[] = $recipient;
 				$sentCount++;
 			} else {
