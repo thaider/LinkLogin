@@ -300,7 +300,7 @@ class SpecialMailings extends SpecialPage {
 			$output->addHTML('</tr>');
 
 			usort( $recipients_sent, function($a,$b) {
-				return $a->ll_mailinglog_timestamp <=> $b->ll_mailinglog_timestamp;
+				return $b->ll_mailinglog_timestamp <=> $a->ll_mailinglog_timestamp;
 			});
 
 			foreach( $recipients_sent as $recipient ) {
