@@ -37,7 +37,7 @@ class SpecialMailings extends SpecialPage {
 		$output = $this->getOutput();
 
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
-		$output->addWikiTextAsInterface('[[Special:EditMailing|' . wfMessage('linklogin-create')->text() . ']]');
+		$output->addWikiTextAsInterface('<div class="mb-4">[[Special:EditMailing|<span class="btn btn-primary">' . wfMessage('linklogin-create')->text() . '</span>]]</div>');
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -113,20 +113,21 @@ class SpecialMailings extends SpecialPage {
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
 
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
-		$output->addHTML('<div class="text-center"><a href="' . $special->getLocalURL() . '">' . wfMessage('linklogin-overview')->text() . '</a></div>');
+		$output->addHTML('<div class="text-center mb-4"><a href="' . $special->getLocalURL() . '" class="btn btn-primary">' . wfMessage('linklogin-overview')->text() . '</a></div>');
 
 		$sentCount = 0;
 		$unsentCount = 0;
 		$newsentCount = 0;
 		$sendableCount = 0;
 		$notincludedCount = 0;
+		$exceptedCount = 0;
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = ['ll_mailing_id' => $par];
 		$mailing = $dbr->selectRow(
 			'll_mailing',
-			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_template','ll_mailing_loginpage','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only'],
+			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_template','ll_mailing_loginpage','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only','ll_mailing_except'],
 			$conds
 		) ?: [];
 
@@ -144,7 +145,8 @@ class SpecialMailings extends SpecialPage {
 
 		$output->addWikiTextAsInterface( '\'\'\'' . $mailing->ll_mailing_title . '\'\'\' versenden');
 
-		$only = $this->createOnly( $mailing->ll_mailing_only );
+		$only = $this->createOnlyExcept( $mailing->ll_mailing_only );
+		$except = $this->createOnlyExcept( $mailing->ll_mailing_except );
 
 		$conds = ['ll_mailinglog_mailing' => $par];
 		$sent = $dbr->selectFieldValues(
@@ -157,8 +159,12 @@ class SpecialMailings extends SpecialPage {
 		$recipients_unsent = [];
 		foreach( $recipients as $recipient ) {
 			$user = User::newFromName( $recipient->user_name );
-			if( !in_array( $recipient->user_name, $only ) ) {
+			if( $mailing->ll_mailing_only != '' && !in_array( $recipient->user_name, $only ) ) {
 				$notincludedCount++;
+				continue;
+			}
+			if( $mailing->ll_mailing_except != '' && in_array( $recipient->user_name, $except ) ) {
+				$exceptedCount++;
 				continue;
 			}
 			$recipient->user = $user;
@@ -177,17 +183,22 @@ class SpecialMailings extends SpecialPage {
 			}
 		}
 
-		if( count( $only ) > 0 ) {
-			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-only}}</div>nur diese ' . count( $only ) . ' User berücksichtigen' . ( $notincludedCount > 0 ? ( ' (' . $notincludedCount . ' User wurden daher nicht berücksichtigt)' ) : '' ) . ':' );
+		if( $only && count( $only ) > 0 ) {
+			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-only}}</div>' . wfMessage('linklogin-only-count', count($only))->text() . ( $notincludedCount > 0 ? ( ' (' . wfMessage( 'linklogin-only-excluded', $notincludedCount ) . ')' ) : '' ) . ':' );
 			$output->addHTML( '<div class="collapse border p-3 m-3" id="ll-only">' . join( ',', $only ) . '</div>' );
 		}
 
-		$output->addWikiTextAsInterface( $newsentCount . ' neu verschickt');
-		$output->addWikiTextAsInterface( $sentCount . ' ingesamt verschickt');
+		if( $except && count( $except ) > 0 ) {
+			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-except}}</div>' . wfMessage('linklogin-except-count', count($except))->text() . ( $exceptedCount > 0 ? ( ' (' . wfMessage( 'linklogin-except-excluded', $exceptedCount ) . ')' ) : '' ) . ':' );
+			$output->addHTML( '<div class="collapse border p-3 m-3" id="ll-except">' . join( ',', $except ) . '</div>' );
+		}
+
+		$output->addWikiMsg( 'linklogin-sent', $newsentCount );
+		$output->addWikiMsg( 'linklogin-sent-total', $sentCount );
 		if( $unsentCount > 0 ) {
 			$columns = wfMessage('linklogin-columns')->exists() ? explode(',',wfMessage('linklogin-columns')->text()) : array_keys( $GLOBALS['wgLinkLoginPreferences'] );
 
-			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3">' . $unsentCount . ' (weitere) Empfänger*innen verfügbar (' . $sendableCount . ' versendbar): </h3>');
+			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3">' . wfMessage( 'linklogin-unsent', $unsentCount )->text() . ' (' . wfMessage( 'linklogin-sendable', $sendableCount )->text() . '): </h3>');
 
 			// Start form
 			$output->addHTML( Xml::element( 'form', [
@@ -240,7 +251,7 @@ class SpecialMailings extends SpecialPage {
 
 			// Example
 			$example_user = reset($recipients_unsent );
-			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-example}}</div>Example output for ' . $example_user->user_name . ' using template [[Template:' . $mailing->ll_mailing_template . '|' . $mailing->ll_mailing_template . ']]:');
+			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-example}}</div>' . wfMessage('linklogin-example', $example_user->user_name, $mailing->ll_mailing_template)->text() );
 			$output->addHTML('<div class="border p-3 m-3 collapse" id="ll-example">');
 			$bodyWikiText = $this->createBody( $example_user, $mailing );
 			$output->addWikiTextAsInterface( $bodyWikiText );
@@ -266,7 +277,7 @@ class SpecialMailings extends SpecialPage {
 		}
 
 		if( $sentCount > 0 ) {
-			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3"><div class="float-right" style="font-size:smaller">{{#semorg-collapse:ll-sent-list}}</div>' . $sentCount . ' bereits verschickt: </h3>');
+			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3"><div class="float-right" style="font-size:smaller">{{#semorg-collapse:ll-sent-list}}</div>' . wfMessage( 'linklogin-sent-heading', $sentCount )->text() . ': </h3>');
 
 			// Start form
 			$output->addHTML('<div class="collapse" id="ll-sent-list">');
@@ -519,22 +530,32 @@ class SpecialMailings extends SpecialPage {
 	/**
 	 * Create list of users that should be considered
 	 * 
-	 * @param $only
+	 * Entries on different lines will be combined with a logical AND (users have to be in/excepted from all of the lists)
+	 * 
+	 * @param $users
 	 * 
 	 * @return Array List of users
 	 */
-	function createOnly( $only ) {
+	function createOnlyExcept( $users ) {
 		$parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
 		$title = SpecialPage::getTitleFor( 'Mailings' );
 		$opt   = new ParserOptions;
-		$only = $parser->parse( $only, $title, $opt, false, true )->getText();
-		$only = strip_tags( $only );
-		$only = htmlspecialchars_decode($only);
-		$only = explode( ',', $only );
-		foreach( $only as &$user ) {
-			$user = trim( $user );
+		$list = false;
+		foreach( explode( "\n", $users ) as $line ) {
+			if( $line == '' ) {
+				continue;
+			}
+			$line = $parser->parse( $line, $title, $opt, false, true )->getText();
+			$line = strip_tags( $line );
+			$line = htmlspecialchars_decode($line);
+			$line = explode( ',', $line );
+			foreach( $line as &$user ) {
+				$user = trim( $user );
+			}
+			unset($user);
+			$line = array_unique( $line );
+			$list = $list === false ? $line : array_intersect( $list, $line );
 		}
-		unset($user);
-		return $only;
+		return $list;
 	}
 }

@@ -1,0 +1,1 @@
+ALTER TABLE /*_*/ll_mailing ADD ll_mailing_except mediumblob NOT NULL;

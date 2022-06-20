@@ -86,6 +86,12 @@ class SpecialEditMailing extends SpecialPage {
 	        	'type' => 'textarea',
 	        	'rows' => 3,
 	        ],
+	        'except' => [
+	        	'label-message' => 'linklogin-except',
+	        	'help-message' => 'linklogin-except-help',
+	        	'type' => 'textarea',
+	        	'rows' => 3,
+	        ],
 	        'timestamp' => [
 	        	'type' => 'hidden',
 	        	'default' => time()
@@ -136,6 +142,7 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_signature' => $formData['signature'],
 				'll_mailing_replyto' => $formData['replyto'],
 				'll_mailing_only' => $formData['only'],
+				'll_mailing_except' => $formData['except'],
 			]);
 
 		$specialMailings = SpecialPage::getTitleFor( 'Mailings' );
@@ -161,6 +168,7 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_signature' => $formData['signature'],
 				'll_mailing_replyto' => $formData['replyto'],
 				'll_mailing_only' => $formData['only'],
+				'll_mailing_except' => $formData['except'],
 			], $conds);
 
 		$specialMailings = SpecialPage::getTitleFor( 'Mailings' );
