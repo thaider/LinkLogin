@@ -149,11 +149,16 @@ class SpecialMailings extends SpecialPage {
 		$except = $this->createOnlyExcept( $mailing->ll_mailing_except );
 
 		$conds = ['ll_mailinglog_mailing' => $par];
-		$sent = $dbr->selectFieldValues(
+		$sent_res = $dbr->select(
 				'll_mailinglog',
-				'll_mailinglog_user',
+				['ll_mailinglog_user','ll_mailinglog_timestamp'],
 				$conds
-			) ?: [];
+			);
+
+		$sent = [];
+		foreach( $sent_res as $row ) {
+			$sent[$row->ll_mailinglog_timestamp] = $row->ll_mailinglog_user;
+		}
 
 		$recipients_sent = [];
 		$recipients_unsent = [];
@@ -172,6 +177,7 @@ class SpecialMailings extends SpecialPage {
 				$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
 			}
 			if( in_array($user->getId(), $sent) ) {
+				$recipient->ll_mailinglog_timestamp = array_flip($sent)[$user->getId()];
 				$recipients_sent[] = $recipient;
 				$sentCount++;
 			} else {
@@ -293,6 +299,10 @@ class SpecialMailings extends SpecialPage {
 			}
 			$output->addHTML('</tr>');
 
+			usort( $recipients_sent, function($a,$b) {
+				return $a->ll_mailinglog_timestamp <=> $b->ll_mailinglog_timestamp;
+			});
+
 			foreach( $recipients_sent as $recipient ) {
 				$output->addHTML( '<tr>' );
 				$output->addHTML( '<td class="text-center">' );
@@ -308,19 +318,7 @@ class SpecialMailings extends SpecialPage {
 				$output->addHTML( '<td>' );
 				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
 				$output->addHTML( '</td>' );
-
-				$conds = [
-					'll_mailinglog_mailing' => $par,
-					'll_mailinglog_user' => $recipient->user->getId(),
-				];
-				$send_date = $dbr->selectField(
-						'll_mailinglog',
-						'll_mailinglog_timestamp',
-						$conds
-					) ?: [];
-
-				$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $send_date ) . '</td>');
-
+				$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $recipient->ll_mailinglog_timestamp ) . '</td>');
 				$output->addHTML( '</tr>' );
 			}
 			$output->addHTML('</table>');
