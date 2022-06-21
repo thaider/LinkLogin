@@ -132,5 +132,11 @@ class LinkLoginHooks {
 			'll_mailing_except',
 			__DIR__ . '/../sql/except.sql'
 		);
+
+		$updater->addExtensionField(
+			'll_mailing',
+			'll_mailing_subjecttemplate',
+			__DIR__ . '/../sql/subjecttemplate.sql'
+		);
 	}
 }

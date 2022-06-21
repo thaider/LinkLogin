@@ -28,7 +28,7 @@ class SpecialEditMailing extends SpecialPage {
 			$conds = ['ll_mailing_id' => $par];
 			$mailing = $dbr->selectRow(
 				'll_mailing',
-				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_loginpage','ll_mailing_template','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only'],
+				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_loginpage','ll_mailing_template','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only'],
 				$conds
 			) ?: [];
 		}
@@ -57,6 +57,11 @@ class SpecialEditMailing extends SpecialPage {
 	        'subject' => [
 	            'label-message' => 'linklogin-subject',
 	            'help-message' => 'linklogin-subject-help',
+	            'type' => 'text',
+	        ],
+	        'subjecttemplate' => [
+	            'label-message' => 'linklogin-subjecttemplate',
+	            'help-message' => 'linklogin-subjecttemplate-help',
 	            'type' => 'text',
 	        ],
 	        'template' => [
@@ -135,6 +140,7 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_title' => $formData['title'],
 				'll_mailing_subject' => $formData['subject'],
 				'll_mailing_template' => $formData['template'],
+				'll_mailing_subjecttemplate' => $formData['subjecttemplate'],
 				'll_mailing_loginpage' => $formData['loginpage'],
 				'll_mailing_user' => $formData['user'],
 				'll_mailing_group' => $formData['group'],
@@ -161,6 +167,7 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_title' => $formData['title'],
 				'll_mailing_subject' => $formData['subject'],
 				'll_mailing_template' => $formData['template'],
+				'll_mailing_subjecttemplate' => $formData['subjecttemplate'],
 				'll_mailing_loginpage' => $formData['loginpage'],
 				'll_mailing_user' => $formData['user'],
 				'll_mailing_group' => $formData['group'],

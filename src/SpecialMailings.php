@@ -44,7 +44,7 @@ class SpecialMailings extends SpecialPage {
 		$conds = [];
 		$mailings = $dbr->select(
 			'll_mailing',
-			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'],
+			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'],
 			$conds
 		) ?: [];
 
@@ -59,14 +59,22 @@ class SpecialMailings extends SpecialPage {
 		foreach( $mailings as $row ) {
 			$creator = User::newFromId( $row->ll_mailing_user );
 			$output->addHTML('<tr>');
-			$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $row->ll_mailing_timestamp ) . '<div style="font-size:small">by ' . $creator->getName() . '</div></td>');
+			$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $row->ll_mailing_timestamp ) . '<div style="font-size:small"> ' . wfMessage( 'linklogin-by', $creator->getName() ) . '</div></td>');
 			$output->addHTML('<td>' . $row->ll_mailing_title . '</td>');
-			$output->addHTML('<td>' . $row->ll_mailing_subject . '</td>');
+			if( $row->ll_mailing_subjecttemplate ) {
+				$output->addHTML('<td>');
+				$output->addWikiTextAsInterface( '<div>[[Template:' . $row->ll_mailing_subjecttemplate . '|' . $row->ll_mailing_subjecttemplate . ']]</div><div class"text-muted" style="font-size:small">{{msgnw:' . $row->ll_mailing_subjecttemplate . '}}</div>' );
+				$output->addHTML('</td>');
+			} else {
+				$output->addHTML('<td>' . $row->ll_mailing_subject . '</td>');
+			}
 			$output->addHTML('<td>');
 			$output->addWikiTextAsInterface ( '[[Template:' . $row->ll_mailing_template . '|' . $row->ll_mailing_template . ']]' );
 			$output->addHTML('</td>');
 			$output->addHTML('<td>');
-			$output->addWikiTextAsInterface ( '[[' . $row->ll_mailing_loginpage . ']]' );
+			if( $row->ll_mailing_loginpage ) {
+				$output->addWikiTextAsInterface ( '[[' . $row->ll_mailing_loginpage . ']]' );
+			}
 			$output->addHTML('</td>');
 			$output->addHTML('<td>' . $row->ll_mailing_group . '</td>');
 			$output->addHTML('<td class="semorg-showedit">');
@@ -127,7 +135,7 @@ class SpecialMailings extends SpecialPage {
 		$conds = ['ll_mailing_id' => $par];
 		$mailing = $dbr->selectRow(
 			'll_mailing',
-			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_template','ll_mailing_loginpage','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only','ll_mailing_except'],
+			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_template','ll_mailing_loginpage','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only','ll_mailing_except'],
 			$conds
 		) ?: [];
 
@@ -259,7 +267,9 @@ class SpecialMailings extends SpecialPage {
 			$example_user = reset($recipients_unsent );
 			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-example}}</div>' . wfMessage('linklogin-example', $example_user->user_name, $mailing->ll_mailing_template)->text() );
 			$output->addHTML('<div class="border p-3 m-3 collapse" id="ll-example">');
-			$bodyWikiText = $this->createBody( $example_user, $mailing );
+			$subjectWikiText = $mailing->ll_mailing_subjecttemplate ? $this->expandTemplate( $example_user, $mailing, $mailing->ll_mailing_subjecttemplate ) : $mailing->ll_mailing_subject;
+			$output->addWikiTextAsInterface( '<b>' . wfMessage('linklogin-subject')->text() . '</b>: ' . $subjectWikiText . '</br></br>' );
+			$bodyWikiText = $this->expandTemplate( $example_user, $mailing, $mailing->ll_mailing_template );
 			$output->addWikiTextAsInterface( $bodyWikiText );
 			$output->addHTML( '<br>---<br>' . $mailing->ll_mailing_signature );
 			$output->addHTML('</div>');
@@ -375,12 +385,16 @@ class SpecialMailings extends SpecialPage {
 					$to = [ new MailAddress( $email ) ];
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
 					$subject = $mailing->ll_mailing_subject;
+					if( $mailing->ll_mailing_subjecttemplate ) {
+						$subjectWikiText = $this->expandTemplate( $recipient, $mailing, $mailing->ll_mailing_subjecttemplate );
+						$subject = strip_tags( $parser->parse( $subjectWikiText, $title, $opt, true, true )->getText() );
+					}
 					$options = [];
 					if( $mailing->ll_mailing_replyto ) {
 						$options['replyTo'] = new MailAddress( $mailing->ll_mailing_replyto );
 					}
 
-					$bodyWikiText = $this->createBody( $recipient, $mailing );
+					$bodyWikiText = $this->expandTemplate( $recipient, $mailing, $mailing->ll_mailing_template );
 					$bodyHtml = $parser->parse( $bodyWikiText, $title, $opt, true, true )->getText();
 					if( $mailing->ll_mailing_signature ) {
 						$bodyHtml .= '<br>---<br>' . $mailing->ll_mailing_signature;
@@ -499,29 +513,33 @@ class SpecialMailings extends SpecialPage {
 
 
 	/**
-	 * Create message body
+	 * Create message body or subject from template
 	 * 
 	 * @param $user
 	 * @param $mailing
+	 * @param $template
 	 * 
-	 * @return String Message body as wikitext
+	 * @return String Message body or subject as wikitext
 	 */
-	function createBody( $recipient, $mailing ) {
+	function expandTemplate( $recipient, $mailing, $template ) {
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
-
-		$title = Title::newFromText($mailing->ll_mailing_loginpage);
 
 		$params = '';
 		foreach( $GLOBALS['wgLinkLoginPreferences'] as $key => $preference ) {
 			$params .= '|' . $key . '=' . $uom->getOption( $recipient->user, $key );
 		}
 
-		$body = '{{' . $mailing->ll_mailing_template . '
-			|username=' . $recipient->user_name . '
-			|login=' . $title->getFullURL([ 'login' => $recipient->user_email_token ]) . $params . '
+		if( $mailing->ll_mailing_loginpage ) {
+			$title = Title::newFromText($mailing->ll_mailing_loginpage);
+			$params .= '|login=' . $title->getFullURL([ 'login' => $recipient->user_email_token ]);
+		}
+
+		$expanded = '{{' . $template . '
+			|username=' . $recipient->user_name . $params . '
+			
 		}}';
 
-		return $body;
+		return $expanded;
 	}
 
 
