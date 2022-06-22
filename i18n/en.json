@@ -66,5 +66,6 @@
 	"linklogin-attemptlog-ip": "IP",
 	"linklogin-attemptlog-hash": "Hash",
 	"action-populateloginlinks": "populate the user table with login links",
-	"action-mailings": "create and send mailings"
+	"action-mailings": "create and send mailings",
+	"action-loginlogs": "inspect login logs"
 }

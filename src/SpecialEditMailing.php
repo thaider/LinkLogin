@@ -28,7 +28,7 @@ class SpecialEditMailing extends SpecialPage {
 			$conds = ['ll_mailing_id' => $par];
 			$mailing = $dbr->selectRow(
 				'll_mailing',
-				['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_group','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_loginpage','ll_mailing_template','ll_mailing_signature','ll_mailing_replyto','ll_mailing_only'],
+				['*'],
 				$conds
 			) ?: [];
 		}

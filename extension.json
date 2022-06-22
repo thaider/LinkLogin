@@ -44,7 +44,7 @@
 		"LinkLoginPreferences": {
 			"value" : {
 				"email": {
-					"type": "text"
+					"type": "email"
 				}
 			}
 		}
