@@ -247,7 +247,7 @@ class SpecialMailings extends SpecialPage {
 				}
 				$output->addHTML( '</td>' );
 				$output->addHTML( '<td>' );
-				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . $recipient->email . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope fa-sm"></i>]</div>' );
+				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . trim( $recipient->email ) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope fa-sm"></i>]</div>' );
 				$output->addHTML( '</td>' );
 				foreach( $columns as $column ) {
 					if( property_exists( $recipient, $column ) ) {
@@ -330,7 +330,7 @@ class SpecialMailings extends SpecialPage {
 				}
 				$output->addHTML( '</td>' );
 				$output->addHTML( '<td>' );
-				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . $recipient->email . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope fa-sm"></i>]</div>' );
+				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . trim($recipient->email) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope fa-sm"></i>]</div>' );
 				$output->addHTML( '</td>' );
 				$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $recipient->ll_mailinglog_timestamp ) . '</td>');
 				$output->addHTML( '</tr>' );
