@@ -9,6 +9,19 @@ LinkLogin users won't see the normal user preference form. Only the preferences 
 
 If you define a template to create the subject the content of the subject field will be ignored.
 
+## Installation
+
+### Dependencies
+
+In order for this extension to work the following extensions need to be installed:
+* EditUser
+* SemanticOrganization
+
+The extension uses Bootstrap classes and therefore works best with skins based on Bootstrap. It has only been tested with Tweeki skin.
+
+
+## Usage
+
 
 ## Configuration Options
 

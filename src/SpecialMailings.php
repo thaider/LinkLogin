@@ -139,6 +139,10 @@ class SpecialMailings extends SpecialPage {
 			$conds
 		) ?: [];
 
+		if( $mailing->ll_mailing_loginpage) {
+			$mailing->ll_mailing_loginpage_title = Title::newFromText($mailing->ll_mailing_loginpage);
+		}
+
 		$recipients = LinkLogin::getLinkLoginUsers();
 
 		if ( $request->getText( 'll-send', false ) ) {
@@ -243,7 +247,7 @@ class SpecialMailings extends SpecialPage {
 				}
 				$output->addHTML( '</td>' );
 				$output->addHTML( '<td>' );
-				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
+				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . $recipient->email . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope"></i>]</div>' );
 				$output->addHTML( '</td>' );
 				foreach( $columns as $column ) {
 					if( property_exists( $recipient, $column ) ) {
@@ -530,8 +534,7 @@ class SpecialMailings extends SpecialPage {
 		}
 
 		if( $mailing->ll_mailing_loginpage ) {
-			$title = Title::newFromText($mailing->ll_mailing_loginpage);
-			$params .= '|login=' . $title->getFullURL([ 'login' => $recipient->user_email_token ]);
+			$params .= '|login=' . $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ]);
 		}
 
 		$expanded = '{{' . $template . '
