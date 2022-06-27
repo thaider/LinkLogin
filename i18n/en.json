@@ -52,6 +52,7 @@
 	"linklogin-sent-total": "$1 sent (total)",
 	"linklogin-unsent": "$1 (further) recipients available",
 	"linklogin-sendable":  "$1 sendable",
+	"linklogin-custom-mail": "send custom mail",
 	"linklogin-example": "Example output for $1 using template [[Template:$2|$2]]:",
 	"linklogin-sent-heading": "$1 already sent",
 	"linklogin-timestamp": "Creation date",

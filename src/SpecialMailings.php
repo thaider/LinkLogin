@@ -232,6 +232,9 @@ class SpecialMailings extends SpecialPage {
 			foreach( $columns as $column ) {
 				$output->addHTML('<th>&lt;' . ucfirst( $column ) . '&gt;</th>');
 			}
+			if( $mailing->ll_mailing_loginpage ) {
+				$output->addHTML( '<th class="semorg-showedit"></th>' );
+			}
 			$output->addHTML('</tr>');
 
 			foreach( $recipients_unsent as $recipient ) {
@@ -247,7 +250,7 @@ class SpecialMailings extends SpecialPage {
 				}
 				$output->addHTML( '</td>' );
 				$output->addHTML( '<td>' );
-				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . trim( $recipient->email ) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope fa-sm"></i>]</div>' );
+				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
 				$output->addHTML( '</td>' );
 				foreach( $columns as $column ) {
 					if( property_exists( $recipient, $column ) ) {
@@ -261,6 +264,11 @@ class SpecialMailings extends SpecialPage {
 						$output->addWikiTextAsInterface( '<div>{{ll-' . $column . $params . '}}</div>' );
 						$output->addHTML('</td>');
 					}
+				}
+				if( $mailing->ll_mailing_loginpage ) {
+					$output->addHTML('<td class="semorg-showedit">');
+					$output->addWikiTextAsInterface( $this->createCustomMailLink( $mailing, $recipient ) );
+					$output->addHTML('</td>');
 				}
 				$output->addHTML( '</tr>' );
 			}
@@ -311,6 +319,9 @@ class SpecialMailings extends SpecialPage {
 			foreach( [ 'mark-unsent', 'username', 'date-sent' ] as $header ) {
 				$output->addHTML('<th ' . ( $header == 'mark-unsent' ? 'class="text-center"' : '' ) . '>' . wfMessage('linklogin-' . $header) . '</th>');
 			}
+			if( $mailing->ll_mailing_loginpage ) {
+				$output->addHTML( '<th class="semorg-showedit"></th>' );
+			}
 			$output->addHTML('</tr>');
 
 			usort( $recipients_sent, function($a,$b) {
@@ -330,9 +341,14 @@ class SpecialMailings extends SpecialPage {
 				}
 				$output->addHTML( '</td>' );
 				$output->addHTML( '<td>' );
-				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']] [mailto:' . trim($recipient->email) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ])) . ' <i class="fa fa-envelope fa-sm"></i>]</div>' );
+				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
 				$output->addHTML( '</td>' );
 				$output->addHTML('<td>' . date( wfMessage('linklogin-dateformat')->text(), $recipient->ll_mailinglog_timestamp ) . '</td>');
+				if( $mailing->ll_mailing_loginpage ) {
+					$output->addHTML('<td class="semorg-showedit">');
+					$output->addWikiTextAsInterface( $this->createCustomMailLink( $mailing, $recipient ) );
+					$output->addHTML('</td>');
+				}
 				$output->addHTML( '</tr>' );
 			}
 			$output->addHTML('</table>');
@@ -576,5 +592,13 @@ class SpecialMailings extends SpecialPage {
 			$list = $list === false ? $line : array_intersect( $list, $line );
 		}
 		return $list;
+	}
+
+
+	function createCustomMailLink( $mailing, $recipient ) {
+		$link = trim( $recipient->email ) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ]));
+		$link = '[mailto:' . $link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]';
+		$link = '<div>' . $link . '</div>';
+		return $link;
 	}
 }
