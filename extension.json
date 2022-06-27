@@ -20,7 +20,8 @@
 		]
 	},
 	"ExtensionMessagesFiles": {
-		"LinkLoginAlias": "LinkLogin.i18n.alias.php"
+		"LinkLoginAlias": "LinkLogin.i18n.alias.php",
+		"LinkLoginMagic": "LinkLogin.i18n.magic.php"
 	},
 	"AutoloadNamespaces": {
 		"MediaWiki\\Extension\\LinkLogin\\": "src/"
@@ -28,7 +29,8 @@
 	"Hooks": {
 		"GetPreferences": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onGetPreferences",
 		"UserLoadAfterLoadFromSession": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onUserLoadAfterLoadFromSession",
-		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates"
+		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates",
+		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit"
 	},
 	"SpecialPages": {
 		"PopulateLoginLinks": "MediaWiki\\Extension\\LinkLogin\\SpecialPopulateLoginLinks",
