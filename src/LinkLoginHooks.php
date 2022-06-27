@@ -4,6 +4,7 @@ namespace MediaWiki\Extension\LinkLogin;
 
 use \MediaWiki\MediaWikiServices;
 use DatabaseUpdater;
+use Parser;
 
 /**
  * A wrapper class for the hooks of the LinkLogin extension.
@@ -138,5 +139,63 @@ class LinkLoginHooks {
 			'll_mailing_subjecttemplate',
 			__DIR__ . '/../sql/subjecttemplate.sql'
 		);
+	}
+
+	public static function onParserFirstCallInit( Parser $parser ){
+		$parser->setFunctionHook( 'linklogin-recipients', [ self::class, 'renderLinkloginRecipients' ] );
+	}
+
+	static function renderLinkloginRecipients( Parser $parser ) {
+		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
+		if (!isset($options['mailing'])) {
+			return "Mailing must be set";
+		}
+		
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$conds = [ 
+			'll_mailinglog_mailing' => $options['mailing'],
+		];
+		if (isset($options['before'])) {
+			$conds[] = 'll_mailinglog_timestamp' . '<=' . $options['before']; 
+		}
+		if (isset($options['after'])) {
+			$conds[] = 'll_mailinglog_timestamp' . '>=' . $options['after']; 
+		}
+		$users = $dbr->selectFieldValues(
+			[ 'user', 'll_mailinglog' ],
+			'user_name', 
+			$conds, 
+			__METHOD__,
+			[],
+			[
+				'user' => [ 'INNER JOIN', [ 'user_id=ll_mailinglog_user'] ]
+			]
+		);
+		
+		$output = implode(',', $users);
+		return $output;
+	 }
+
+	/**
+	 * Converts an array of values in form [0] => "name=value"
+	 * into a real associative array in form [name] => value
+	 * If no = is provided, true is assumed like this: [name] => true
+	 *
+	 * @param array string $options
+	 * @return array $results
+	 */
+	static function extractOptions( array $options ) {
+		$results = [];
+		foreach ( $options as $option ) {
+			$pair = array_map( 'trim', explode( '=', $option, 2 ) );
+			if ( count( $pair ) === 2 ) {
+				$results[ $pair[0] ] = $pair[1];
+			}
+			if ( count( $pair ) === 1 ) {
+				$results[ $pair[0] ] = true;
+			}
+		}
+		return $results;
 	}
 }
