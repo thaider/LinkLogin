@@ -6,8 +6,8 @@ As from address for the e-mails `$wgPasswordSender` will be used. The sender's n
 
 LinkLogin users won't see the normal user preference form. Only the preferences defined in `$wgLinkLoginPreferences` will be shown to them. They can also be edited by users with `edituser` right (defined by EditUser extension). These preferences can be used as variables in templates that define the subject and body of mailings.
 
-
 If you define a template to create the subject the content of the subject field will be ignored.
+
 
 ## Installation
 
@@ -43,12 +43,21 @@ $wgLinkLoginPreferences = [
 
 HTMLForm's syntax can be used to define additional fields.
 
+### $wgLinkLoginDelimiter
+
+Delimiter to be used for user lists for inclusion/exclusion and also for the parser functions.
+
 
 ## Parser Functions
 
-### {{#linklogin-recipients:mailing=|before=|after=}} (tbd)
+### {{#linklogin-recipients:mailing=|before=|after=}}
 
-Gets comma separated list of a mailing's recipients.
+Gets delimiter separated list of a mailing's recipients.
+
+Parameters:
+* mailing: Mailing ID
+* before (optional): Timestamp; mailing must have been sent before
+* after (optional): Timestamp; mailing must have been sent after
 
 ### {{#linklogin-logins:before=|after=}} (tbd)
 
@@ -59,7 +68,7 @@ Gets comma separated list of logins.
 
 ### PopulateLoginLinks
 
-whose e-mail address hasn't been set
+Creates login hashes for all users who meet the conditions: they are in one of the LinkLogin groups, their e-mail address hasn't been set and the `user_email_token` and `user_email_token_expires` fields are empty or null. 
 
 ### Mailings
 
