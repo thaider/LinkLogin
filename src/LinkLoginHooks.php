@@ -173,6 +173,8 @@ class LinkLoginHooks {
 		if (!isset($options['mailing'])) {
 			return "Mailing must be set";
 		}
+
+		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
 		
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -196,7 +198,7 @@ class LinkLoginHooks {
 			]
 		);
 		
-		$output = implode(',', $users);
+		$output = join($delimiter, $users);
 		return $output;
 	}
 
