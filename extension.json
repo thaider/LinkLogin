@@ -49,6 +49,9 @@
 					"type": "email"
 				}
 			}
+		},
+		"LinkLoginDelimiter": {
+			"value": ";"
 		}
 	},
 	"AvailableRights": [

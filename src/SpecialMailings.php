@@ -32,6 +32,8 @@ class SpecialMailings extends SpecialPage {
 
 	/**
 	 * Show overview of all mailings
+	 * 
+	 * @return void
 	 */
 	function showOverview() {
 		$output = $this->getOutput();
@@ -112,6 +114,8 @@ class SpecialMailings extends SpecialPage {
 	 * Show Details for one specific Mailing with the option to send it
 	 * 
 	 * @param Integer $par Mailing ID
+	 * 
+	 * @return void
 	 */
 	function showDetails( $par ) {
 		$request = $this->getRequest();
@@ -203,12 +207,12 @@ class SpecialMailings extends SpecialPage {
 
 		if( $only && count( $only ) > 0 ) {
 			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-only}}</div>' . wfMessage('linklogin-only-count', count($only))->text() . ( $notincludedCount > 0 ? ( ' (' . wfMessage( 'linklogin-only-excluded', $notincludedCount ) . ')' ) : '' ) . ':' );
-			$output->addHTML( '<div class="collapse border p-3 m-3" id="ll-only">' . join( ',', $only ) . '</div>' );
+			$output->addHTML( '<div class="collapse border p-2 m-3" id="ll-only" style="font-size:small">' . join( ', ', $only ) . '</div>' );
 		}
 
 		if( $except && count( $except ) > 0 ) {
 			$output->addWikiTextAsInterface( '<div class="float-right">{{#semorg-collapse:ll-except}}</div>' . wfMessage('linklogin-except-count', count($except))->text() . ( $exceptedCount > 0 ? ( ' (' . wfMessage( 'linklogin-except-excluded', $exceptedCount ) . ')' ) : '' ) . ':' );
-			$output->addHTML( '<div class="collapse border p-3 m-3" id="ll-except">' . join( ',', $except ) . '</div>' );
+			$output->addHTML( '<div class="collapse border p-2 m-3" id="ll-except" style="font-size:small">' . join( ', ', $except ) . '</div>' );
 		}
 
 		$output->addWikiMsg( 'linklogin-sent', $newsentCount );
@@ -368,6 +372,9 @@ class SpecialMailings extends SpecialPage {
 	/**
 	 * Send Mailing
 	 * 
+	 * @param $mailing
+	 * @param $recipients
+	 * 
 	 * @return Integer Number of sent Mailings
 	 */
 	function send( $mailing, $recipients ) {
@@ -460,6 +467,9 @@ class SpecialMailings extends SpecialPage {
 	/**
 	 * Mark mailing as sent for specific users
 	 * 
+	 * @param $mailing
+	 * @param $recipients
+	 * 
 	 * @return Integer Number of marked users
 	 */
 	function markAsSent( $mailing, $recipients ) {
@@ -505,6 +515,9 @@ class SpecialMailings extends SpecialPage {
 	/**
 	 * Mark mailing as unsent for specific users
 	 * 
+	 * @param $mailing
+	 * @param $recipients
+	 * 
 	 * @return Integer Number of unmarked users
 	 */
 	function markAsUnsent( $mailing, $recipients ) {
@@ -535,7 +548,7 @@ class SpecialMailings extends SpecialPage {
 	/**
 	 * Create message body or subject from template
 	 * 
-	 * @param $user
+	 * @param $recipient
 	 * @param $mailing
 	 * @param $template
 	 * 
@@ -572,6 +585,7 @@ class SpecialMailings extends SpecialPage {
 	 * @return Array List of users
 	 */
 	function createOnlyExcept( $users ) {
+		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
 		$parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
 		$title = SpecialPage::getTitleFor( 'Mailings' );
 		$opt   = new ParserOptions;
@@ -583,7 +597,7 @@ class SpecialMailings extends SpecialPage {
 			$line = $parser->parse( $line, $title, $opt, false, true )->getText();
 			$line = strip_tags( $line );
 			$line = htmlspecialchars_decode($line);
-			$line = explode( ',', $line );
+			$line = explode( $delimiter, $line );
 			foreach( $line as &$user ) {
 				$user = trim( $user );
 			}
@@ -595,6 +609,14 @@ class SpecialMailings extends SpecialPage {
 	}
 
 
+	/**
+	 * Create link to send custom mail
+	 * 
+	 * @param $mailing
+	 * @param $recipient
+	 * 
+	 * @return String HTML for link
+	 */
 	function createCustomMailLink( $mailing, $recipient ) {
 		$link = trim( $recipient->email ) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ]));
 		$link = '[mailto:' . $link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]';

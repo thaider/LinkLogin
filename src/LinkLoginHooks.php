@@ -85,6 +85,8 @@ class LinkLoginHooks {
 
 
 	/**
+	 * Register database updates
+	 * 
 	 * @param DatabaseUpdate $updater
 	 * 
 	 * @return void
@@ -141,10 +143,31 @@ class LinkLoginHooks {
 		);
 	}
 
+
+	/**
+	 * Register Parser Functions
+	 * 
+	 * @param Parser $parser Parser
+	 * 
+	 * @return void
+	 */
 	public static function onParserFirstCallInit( Parser $parser ){
 		$parser->setFunctionHook( 'linklogin-recipients', [ self::class, 'renderLinkloginRecipients' ] );
 	}
 
+
+	/**
+	 * Parser function {{#linklogin-recipients:}}
+	 * 
+	 * Return list of a mailing's recpients. Parameters:
+	 * - mailing: Mailing ID
+	 * - before: Timestamp
+	 * - after: Timestamp
+	 * 
+	 * @param Parser $parser Parser
+	 * 
+	 * @return comma separated list of recipients' user names
+	 */
 	static function renderLinkloginRecipients( Parser $parser ) {
 		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
 		if (!isset($options['mailing'])) {
@@ -175,7 +198,8 @@ class LinkLoginHooks {
 		
 		$output = implode(',', $users);
 		return $output;
-	 }
+	}
+
 
 	/**
 	 * Converts an array of values in form [0] => "name=value"
@@ -183,6 +207,7 @@ class LinkLoginHooks {
 	 * If no = is provided, true is assumed like this: [name] => true
 	 *
 	 * @param array string $options
+	 * 
 	 * @return array $results
 	 */
 	static function extractOptions( array $options ) {

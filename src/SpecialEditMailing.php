@@ -130,6 +130,13 @@ class SpecialEditMailing extends SpecialPage {
 	}
 
 
+	/**
+	 * Callback function to create a new mailing, redirects to overview page
+	 * 
+	 * @param Array $formData
+	 * 
+	 * @return void
+	 */
 	function create( $formData ) {
 		$output = $this->getOutput();
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -156,6 +163,13 @@ class SpecialEditMailing extends SpecialPage {
 	}
 
 
+	/**
+	 * Callback function to save changed mailing data, redirects to overview page
+	 * 
+	 * @param Array $formData
+	 * 
+	 * @return void
+	 */
 	function edit( $formData ) {
 		$output = $this->getOutput();
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
