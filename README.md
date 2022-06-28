@@ -25,11 +25,11 @@ The extension uses Bootstrap classes and therefore works best with skins based o
 
 ## Configuration Options
 
-### $wgLinkLoginGroups
+### `$wgLinkLoginGroups`
 
 Use this configuration option to define groups whose members can be LinkLogin members. Only members of these groups can be recipients for mailings.
 
-### $wgLinkLoginPreferences
+### `$wgLinkLoginPreferences`
 
 Use this option to define additional preferences. The default is:
 
@@ -43,14 +43,14 @@ $wgLinkLoginPreferences = [
 
 HTMLForm's syntax can be used to define additional fields.
 
-### $wgLinkLoginDelimiter
+### `$wgLinkLoginDelimiter`
 
 Delimiter to be used for user lists for inclusion/exclusion and also for the parser functions.
 
 
 ## Parser Functions
 
-### {{#linklogin-recipients:mailing=|before=|after=}}
+### `{{#linklogin-recipients:mailing=|before=|after=}}`
 
 Gets delimiter separated list of a mailing's recipients.
 
@@ -59,32 +59,32 @@ Parameters:
 * before (optional): Timestamp; mailing must have been sent before
 * after (optional): Timestamp; mailing must have been sent after
 
-### {{#linklogin-logins:before=|after=}} (tbd)
+### `{{#linklogin-logins:before=|after=}}` (tbd)
 
 Gets comma separated list of logins.
 
 
 ## Special Pages 
 
-### PopulateLoginLinks
+### Special:PopulateLoginLinks
 
 Creates login hashes for all users who meet the conditions: they are in one of the LinkLogin groups, their e-mail address hasn't been set and the `user_email_token` and `user_email_token_expires` fields are empty or null. 
 
-### Mailings
+### Special:Mailings
 
 Lists all mailings, allows to create, edit, and send mailings.
 
 To change the columns shown in the detailed view for a mailing, use `MediaWiki:linklogin-columns`. By default all the preferences defined by `$wgLinkLoginPreferences` will be shown in their own column. If you define a column with no corresponding preference it is assumed, that a template should be used. In the template you can use all the preferences as variables.
 
-### EditMailing
+### Special:EditMailing
 
 Defines the form to create and edit mailings.
 
-### LoginLog
+### Special:LoginLog
 
 Shows successful logins.
 
-### LoginAttemptLog
+### Special:LoginAttemptLog
 
 Shows login attempts with invalid hashes.
 
