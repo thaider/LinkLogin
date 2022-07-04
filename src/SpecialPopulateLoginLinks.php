@@ -16,8 +16,7 @@ class SpecialPopulateLoginLinks extends \SpecialPage {
 		$output = $this->getOutput();
 		$this->setHeaders();
 
-		$populatedFeedback = wfMessage('linklogin-populated', $populatedCount)->text();
-		$output->addWikiTextAsInterface( $populatedFeedback );
+		$output->addWikiMsg( 'linklogin-populated', $populatedCount );
 
 		$list_heading = wfMessage('linklogin-list-heading')->text();
 		$output->addWikiTextAsInterface( '===' . $list_heading . '===' );
