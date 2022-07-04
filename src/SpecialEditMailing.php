@@ -41,6 +41,8 @@ class SpecialEditMailing extends SpecialPage {
 		}
 
 
+		$email = $GLOBALS['wgLinkLoginPreferences'];
+
 	    $formDescriptor = [
 	        'title' => [
 	            'label-message' => 'linklogin-title',
@@ -54,6 +56,11 @@ class SpecialEditMailing extends SpecialPage {
 	        	'type' => 'radio',
 	        	'default' => 'test',
 	        ],
+			'email' => [
+	        	'default' => 'email',
+				'type' => 'radio',
+				'options' => $email
+			],
 	        'subject' => [
 	            'label-message' => 'linklogin-subject',
 	            'help-message' => 'linklogin-subject-help',
@@ -104,8 +111,7 @@ class SpecialEditMailing extends SpecialPage {
 	        'user' => [
 	        	'type' => 'hidden',
 	        	'default' => $this->getUser()->getId()
-	        ]
-
+			]
 	    ];
 		
 		if( $par ) {

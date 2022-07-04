@@ -1,0 +1,1 @@
+ALTER TABLE /*_*/ll_mailing ADD ll_mailing_email varchar(255) binary NOT NULL DEFAULT '';
