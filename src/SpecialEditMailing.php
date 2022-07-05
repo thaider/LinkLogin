@@ -41,7 +41,6 @@ class SpecialEditMailing extends SpecialPage {
 		}
 
 
-		$email = $GLOBALS['wgLinkLoginPreferences'];
 
 	    $formDescriptor = [
 	        'title' => [
@@ -56,11 +55,6 @@ class SpecialEditMailing extends SpecialPage {
 	        	'type' => 'radio',
 	        	'default' => 'test',
 	        ],
-			'email' => [
-	        	'default' => 'email',
-				'type' => 'radio',
-				'options' => $email
-			],
 	        'subject' => [
 	            'label-message' => 'linklogin-subject',
 	            'help-message' => 'linklogin-subject-help',
@@ -86,6 +80,12 @@ class SpecialEditMailing extends SpecialPage {
 	            'help-message' => 'linklogin-replyto-help',
 	            'type' => 'email',
 	        ],
+			'email' => [
+				'type' => 'text',
+				'default' => 'email',
+				'options' => $email,
+				'label-message' => 'linklogin-email'
+			],
 	        'signature' => [
 	        	'label-message' => 'linklogin-signature',
 	        	'help-message' => 'linklogin-signature-help',
@@ -114,6 +114,16 @@ class SpecialEditMailing extends SpecialPage {
 			]
 	    ];
 		
+		$email = 0;
+		foreach ($GLOBALS['wgLinkLoginPreferences'] as $preference){
+			if($preference['type'] = 'email') {
+				$email += 1;
+			}
+		}
+		if ($email == 1 && $mailing->ll_mailing_email == 'email') {
+			$formDescriptor['email']['type'] = 'hidden';
+		}
+
 		if( $par ) {
 			foreach( $formDescriptor as $key => $element ) {
 				if( property_exists( $mailing, 'll_mailing_' . $key ) ) {
@@ -160,6 +170,7 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_timestamp' => $formData['timestamp'],
 				'll_mailing_signature' => $formData['signature'],
 				'll_mailing_replyto' => $formData['replyto'],
+				'll_mailing_email' => $formData['email'],
 				'll_mailing_only' => $formData['only'],
 				'll_mailing_except' => $formData['except'],
 			]);
@@ -194,6 +205,7 @@ class SpecialEditMailing extends SpecialPage {
 				'll_mailing_timestamp' => $formData['timestamp'],
 				'll_mailing_signature' => $formData['signature'],
 				'll_mailing_replyto' => $formData['replyto'],
+				'll_mailing_email' => $formData['email'],
 				'll_mailing_only' => $formData['only'],
 				'll_mailing_except' => $formData['except'],
 			], $conds);

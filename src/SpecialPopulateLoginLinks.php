@@ -11,13 +11,16 @@ class SpecialPopulateLoginLinks extends \SpecialPage {
 		$this->checkPermissions('populateloginlinks');
 
 		$populatedCount = LinkLogin::populateLoginTokens();
-		
 		$request = $this->getRequest();
 		$output = $this->getOutput();
 		$this->setHeaders();
+		
+		var_dump($par);
+		if( !is_null($par)){
+			return;
+		}
 
 		$output->addWikiMsg( 'linklogin-populated', $populatedCount );
-
 		$list_heading = wfMessage('linklogin-list-heading')->text();
 		$output->addWikiTextAsInterface( '===' . $list_heading . '===' );
 
@@ -25,7 +28,7 @@ class SpecialPopulateLoginLinks extends \SpecialPage {
 		$groupUsers = LinkLogin::getLinkLoginGroupUsers();
 
 		$output->addWikiMsg( 'linklogin-groupcount', count( $groupUsers ), join(', ', $groups) );
-
+		
 		$users = LinkLogin::getLinkLoginUsers();
 		if( ( $usersCount = $users->numRows() ) > 0 ) {
 			$usersTable = wfMessage('linklogin-conditioncount', $usersCount )->text();
