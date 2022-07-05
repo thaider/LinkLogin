@@ -241,10 +241,25 @@ class SpecialMailings extends SpecialPage {
 			}
 			$output->addHTML('</tr>');
 
+			$email_columns = explode(',' , $mailing->ll_mailing_email);
+			if ($email_columns[0] == "" && count($email_columns) == 1 ) {
+				$email_columns = ['email'];
+			}
+			foreach ($email_columns as &$preference) {
+				$preference = trim($preference);
+			}
+			unset($preference);
+			
 			foreach( $recipients_unsent as $recipient ) {
+				foreach ($email_columns as $preference) {
+					$email = $recipient->$preference;
+					if ($email != ""){
+						continue;
+					}
+				}
 				$output->addHTML( '<tr>' );
 				$output->addHTML( '<td class="text-center">' );
-				if( $recipient->email ) {
+				if( $email ) {
 					$output->addHTML( Xml::element( 'input', [ 
 						'type' => 'checkbox', 
 						'name' => 'll-recipient[]',
@@ -335,14 +350,12 @@ class SpecialMailings extends SpecialPage {
 			foreach( $recipients_sent as $recipient ) {
 				$output->addHTML( '<tr>' );
 				$output->addHTML( '<td class="text-center">' );
-				if( $recipient->email ) {
-					$output->addHTML( Xml::element( 'input', [ 
-						'type' => 'checkbox', 
-						'name' => 'll-recipient[]',
-						'value' => $recipient->user->getId(),
-						//'checked' => true
-					] ) );
-				}
+				$output->addHTML( Xml::element( 'input', [ 
+					'type' => 'checkbox', 
+					'name' => 'll-recipient[]',
+					'value' => $recipient->user->getId(),
+					//'checked' => true
+				] ) );
 				$output->addHTML( '</td>' );
 				$output->addHTML( '<td>' );
 				$output->addWikiTextAsInterface( '<div>[[Special:EditUser/' . $recipient->user_name . '|' . $recipient->user_name . ']]</div>' );
@@ -402,12 +415,26 @@ class SpecialMailings extends SpecialPage {
 		$parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
 		$title = Title::newFromText( $mailing->ll_mailing_loginpage );
 		$opt   = new ParserOptions;
+		
+		$email_columns = explode(',' , $mailing->ll_mailing_email);
+			if ($email_columns[0] == "" && count($email_columns) == 1 ) {
+				$email_columns = ['email'];
+			}
+		foreach ($email_columns as &$preference) {
+			$preference = trim($preference);
+		}
+		unset($preference);
 
 		foreach( $recipients as $recipient ) {
 			if( in_array( $recipient->user_name, $selected_recipients ) ) {
 				$user = User::newFromName( $recipient->user_name );
 				$recipient->user = $user;
-				$email = $uom->getOption( $user, 'email' );
+				foreach ($email_columns as $preference) {
+					$email = $uom->getOption( $user, $preference );
+					if (!is_null($email)){
+						continue;
+					}
+				}
 				if( !in_array($user->getId(), $sent) && !is_null( $email ) ) {
 					$to = [ new MailAddress( $email ) ];
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );

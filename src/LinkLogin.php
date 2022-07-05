@@ -21,6 +21,7 @@ class LinkLogin {
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [ 
+			//Erste Condition fällt weg
 			"(TRIM('\0' FROM user_email_token)='' OR user_email_token is null)",
 			'user_email_token_expires' => null,
 			'user_email' => '',
