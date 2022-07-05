@@ -15,6 +15,11 @@ class SpecialPopulateLoginLinks extends \SpecialPage {
 		$request = $this->getRequest();
 		$output = $this->getOutput();
 		$this->setHeaders();
+		
+		var_dump($par);
+		if( !is_null($par)){
+			return;
+		}
 
 		if ($par) {
 			$populatedCount = LinkLogin::populateLoginTokens($par);

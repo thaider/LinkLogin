@@ -43,6 +43,13 @@ $wgLinkLoginPreferences = [
 
 HTMLForm's syntax can be used to define additional fields.
 
+To add an extra preference set $wgLinkLoginPreferences like this:
+```
+$wgLinkLoginPreferences['work'] = [
+    'type' => 'email',
+];
+```
+
 ### `$wgLinkLoginDelimiter`
 
 Delimiter to be used for user lists for inclusion/exclusion and also for the parser functions.
