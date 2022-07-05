@@ -15,17 +15,24 @@ class LinkLogin {
 	 * 
 	 * @return Integer Number of populated rows
 	 */
-	public static function populateLoginTokens() {
+	public static function populateLoginTokens($par = NULL) {
 		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
 		
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		
 		$conds = [ 
-			"(TRIM('\0' FROM user_email_token)='' OR user_email_token is null)",
 			'user_email_token_expires' => null,
 			'user_email' => '',
 			'ug_group' => $groups,
 		];
+
+		if($par) {
+			$conds['user_id'] = (int)$par; 
+		} else {
+			$conds[] = "(TRIM('\0' FROM user_email_token)='' OR user_email_token is null)";
+		}
+
 		$users = $dbr->selectFieldValues(
 			[ 'user', 'user_groups' ],
 			'user_id', 
