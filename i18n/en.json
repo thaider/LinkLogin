@@ -13,6 +13,7 @@
 	"linklogin-reset": "Reset hash",
 	"linklogin-reset-success": "The <code>user_email_token</code> for user “$1” has been reset.",
 	"linklogin-reset-fail": "The <code>user_email_token</code> for user “$1” could not be reset.",
+	"linklogin-reset-fail-no-user": "The user with the id $1 does not exist. The <code>user_email_token</code> could not be reset.",
 	"linklogin-list-heading": "List of all users with hashes",
 	"linklogin-groupcount": "$1 {{plural:$1|user is|users are}} in the groups defined by <code>$LinkLoginGroups</code> ($2)",
 	"linklogin-conditioncount": "$1 of them meet{{plural:$1|s}} all the conditions and ha{{plural:$1|s|ve}} a hash defined:",
