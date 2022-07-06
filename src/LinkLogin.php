@@ -200,7 +200,7 @@ class LinkLogin {
 		];
 		$LinkLoginUsers = $dbr->select(
 			'user',
-			['user_name','user_email_token'],
+			['user_name','user_email_token', 'user_id'],
 			$conds,
 			__METHOD__,
 			[
