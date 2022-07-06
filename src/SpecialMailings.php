@@ -522,16 +522,18 @@ class SpecialMailings extends SpecialPage {
 		foreach( $recipients as $recipient ) {
 			if( in_array( $recipient->user_name, $selected_recipients ) ) {
 				$user = User::newFromName( $recipient->user_name );
-				$dbw = $lb->getConnectionRef( DB_PRIMARY );
-				$res = $dbw->insert( 
-					'll_mailinglog',
-					[
-						'll_mailinglog_mailing' => $mailing->ll_mailing_id,
-						'll_mailinglog_user' => $user->getId(),
-						'll_mailinglog_timestamp' => time(),
-					]);
-
-				$counter++;
+				if (!in_array($user->getId(),$sent)){
+					$dbw = $lb->getConnectionRef( DB_PRIMARY );
+					$res = $dbw->insert( 
+						'll_mailinglog',
+						[
+							'll_mailinglog_mailing' => $mailing->ll_mailing_id,
+							'll_mailinglog_user' => $user->getId(),
+							'll_mailinglog_timestamp' => time(),
+						],
+					);
+				}
+					$counter++;
 			}
 		}
 
