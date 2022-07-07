@@ -40,8 +40,6 @@ class SpecialEditMailing extends SpecialPage {
 			$group = $key;
 		}
 
-
-
 	    $formDescriptor = [
 	        'title' => [
 	            'label-message' => 'linklogin-title',
@@ -83,7 +81,6 @@ class SpecialEditMailing extends SpecialPage {
 			'email' => [
 				'type' => 'text',
 				'default' => 'email',
-				'options' => $email,
 				'label-message' => 'linklogin-email'
 			],
 	        'signature' => [

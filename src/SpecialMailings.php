@@ -143,6 +143,15 @@ class SpecialMailings extends SpecialPage {
 			$conds
 		) ?: [];
 
+		$mailing->email_columns = explode(',' , $mailing->ll_mailing_email);
+		foreach ($mailing->email_columns as &$preference) {
+			$preference = trim($preference);
+		}
+		unset($preference);
+		if ($mailing->email_columns[0] == "" && count($mailing->email_columns) == 1 ) {
+			$mailing->email_columns = ['email'];
+		}
+
 		if( $mailing->ll_mailing_loginpage) {
 			$mailing->ll_mailing_loginpage_title = Title::newFromText($mailing->ll_mailing_loginpage);
 		}
@@ -189,9 +198,7 @@ class SpecialMailings extends SpecialPage {
 				continue;
 			}
 			$recipient->user = $user;
-			foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
-				$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
-			}
+			$recipient = $this->enrichRecipient( $recipient );
 			if( in_array($user->getId(), array_keys( $sent )) ) {
 				$recipient->ll_mailinglog_timestamp = $sent[$user->getId()];
 				$recipients_sent[] = $recipient;
@@ -199,7 +206,7 @@ class SpecialMailings extends SpecialPage {
 			} else {
 				$recipients_unsent[] = $recipient;
 				$unsentCount++;
-				if( $recipient->email ) {
+				if( $this->getTo( $mailing, $recipient ) ) {
 					$sendableCount++;
 				}
 			}
@@ -241,30 +248,15 @@ class SpecialMailings extends SpecialPage {
 			}
 			$output->addHTML('</tr>');
 
-			$email_columns = explode(',' , $mailing->ll_mailing_email);
-			if ($email_columns[0] == "" && count($email_columns) == 1 ) {
-				$email_columns = ['email'];
-			}
-			foreach ($email_columns as &$preference) {
-				$preference = trim($preference);
-			}
-			unset($preference);
-			
+
 			foreach( $recipients_unsent as $recipient ) {
-				foreach ($email_columns as $preference) {
-					$email = $recipient->$preference;
-					if ($email != ""){
-						continue;
-					}
-				}
 				$output->addHTML( '<tr>' );
 				$output->addHTML( '<td class="text-center">' );
-				if( $email ) {
+				if( $to = $this->getTo( $mailing, $recipient ) ) {
 					$output->addHTML( Xml::element( 'input', [ 
 						'type' => 'checkbox', 
 						'name' => 'll-recipient[]',
 						'value' => $recipient->user_name,
-						//'checked' => true
 					] ) );
 				}
 				$output->addHTML( '</td>' );
@@ -416,27 +408,15 @@ class SpecialMailings extends SpecialPage {
 		$title = Title::newFromText( $mailing->ll_mailing_loginpage );
 		$opt   = new ParserOptions;
 		
-		$email_columns = explode(',' , $mailing->ll_mailing_email);
-			if ($email_columns[0] == "" && count($email_columns) == 1 ) {
-				$email_columns = ['email'];
-			}
-		foreach ($email_columns as &$preference) {
-			$preference = trim($preference);
-		}
-		unset($preference);
-
 		foreach( $recipients as $recipient ) {
 			if( in_array( $recipient->user_name, $selected_recipients ) ) {
 				$user = User::newFromName( $recipient->user_name );
 				$recipient->user = $user;
-				foreach ($email_columns as $preference) {
-					$email = $uom->getOption( $user, $preference );
-					if (!is_null($email)){
-						continue;
-					}
-				}
-				if( !in_array($user->getId(), $sent) && !is_null( $email ) ) {
-					$to = [ new MailAddress( $email ) ];
+				$recipient = $this->enrichRecipient( $recipient );
+				$to = $this->getTo( $mailing, $recipient );
+
+				if( !in_array($user->getId(), $sent) && !is_null( $to ) ) {
+					$to = [ new MailAddress( $to ) ];
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
 					$subject = $mailing->ll_mailing_subject;
 					if( $mailing->ll_mailing_subjecttemplate ) {
@@ -575,6 +555,23 @@ class SpecialMailings extends SpecialPage {
 
 
 	/**
+	 * Enrich recipient with user options
+	 * 
+	 * @param $recipient Recipient
+	 * 
+	 * @return Enriched recipient
+	 */
+	function enrichRecipient( $recipient ) {
+		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
+
+		foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+			$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
+		}
+		return $recipient;
+	}
+
+
+	/**
 	 * Create message body or subject from template
 	 * 
 	 * @param $recipient
@@ -584,11 +581,9 @@ class SpecialMailings extends SpecialPage {
 	 * @return String Message body or subject as wikitext
 	 */
 	function expandTemplate( $recipient, $mailing, $template ) {
-		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
-
 		$params = '';
-		foreach( $GLOBALS['wgLinkLoginPreferences'] as $key => $preference ) {
-			$params .= '|' . $key . '=' . $uom->getOption( $recipient->user, $key );
+		foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+			$params .= '|' . $preference . '=' . $recipient->$preference;
 		}
 
 		if( $mailing->ll_mailing_loginpage ) {
@@ -647,9 +642,33 @@ class SpecialMailings extends SpecialPage {
 	 * @return String HTML for link
 	 */
 	function createCustomMailLink( $mailing, $recipient ) {
-		$link = trim( $recipient->email ) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ]));
-		$link = '[mailto:' . $link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]';
-		$link = '<div>' . $link . '</div>';
+		$link = '';
+		$to = $this->getTo( $mailing, $recipient );
+		if( $to ) {
+			$link = trim( $to ) . '?body=' . urlencode( $mailing->ll_mailing_loginpage_title->getFullURL([ 'login' => $recipient->user_email_token ]));
+			$link = '[mailto:' . $link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]';
+			$link = '<div>' . $link . '</div>';
+		}
 		return $link;
+	}
+
+
+	/**
+	 * Get recipient's mail address to be used
+	 * 
+	 * @param $mailing
+	 * @param $recipient
+	 * 
+	 * @return String Mail address or empty string if none available
+	 */
+	function getTo( $mailing, $recipient ) {
+		$to = '';
+		foreach ($mailing->email_columns as $preference) {
+			$to = $recipient->$preference;
+			if( $to ) {
+				break;
+			}
+		}
+		return $to;
 	}
 }
