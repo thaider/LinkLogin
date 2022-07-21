@@ -54,6 +54,18 @@ $wgLinkLoginPreferences['work'] = [
 
 Delimiter to be used for user lists for inclusion/exclusion and also for the parser functions.
 
+### `$wgLinkLoginAttemptlogNotify`
+
+Set it to an e-mail address if you want to be notified after every `$wgLinkLoginAttemtplogThreshold` failed login attempts.
+
+### `$wgLinkLoginAttemtplogThreshold`
+
+The default is `100`.
+
+### `$LinkLoginAttemptlogPause`
+
+A notification will only be sent, if the last one was sent at least this many seconds ago. The default is `86400` (24 hours).
+
 
 ## Parser Functions
 
