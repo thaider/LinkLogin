@@ -24,29 +24,6 @@ class LinkLoginHooks {
         if( $linkLoginUsers ) {
             $preferences = $GLOBALS['wgLinkLoginPreferences'];
             foreach( $preferences as $key => $preference ) {
-				if( isset( $preferences['groups'] )) {
-					$ugm = MediaWikiServices::getInstance()->getUserGroupManager();
-					$usergroup = $ugm->getUserGroups($user);
-					if(is_array($preferences['groups'])){
-						//Check Array
-						foreach($preferences['groups'] as $pref){
-							if (in_array($pref, $usergroup)){
-								die(var_dump("Usergruppe im Array"));
-								continue;
-							};
-						}
-						unset( $preferences[$key] );
-						die(var_dump("Usergruppe nicht im Array"));
-					} else { // Check String
-						if( in_array($preferences['groups'], $usergroup)) {
-							die(var_dump("Usergruppe im String"));
-						} else { 
-							unset( $preferences[$key] );
-							die(var_dump("Usergruppe nicht im String"));
-						}
-					} 
-					
-				}
             	if( !isset( $preferences[$key]['type'] ) ) {
             		$preferences[$key]['type'] = 'text';
             	}
