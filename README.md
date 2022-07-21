@@ -58,7 +58,7 @@ Delimiter to be used for user lists for inclusion/exclusion and also for the par
 
 Set it to an e-mail address if you want to be notified after every `$wgLinkLoginAttemtplogThreshold` failed login attempts.
 
-### `$wgLinkLoginAttemtplogThreshold`
+### `$wgLinkLoginAttemptlogThreshold`
 
 The default is `100`.
 
