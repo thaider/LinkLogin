@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\LinkLogin;
 
 use \MediaWiki\MediaWikiServices;
+use MailAddress;
 
 /**
  * A wrapper class for the hooks of this extension.
@@ -274,6 +275,7 @@ class LinkLogin {
 	 * @param String $hash Hash
 	 */
 	public static function logLinkLoginAttempt($ip, $hash) {
+		$time = time();
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbw = $lb->getConnectionRef( DB_PRIMARY );
 		$res = $dbw->insert( 
@@ -281,7 +283,75 @@ class LinkLogin {
 			[
 				'll_attemptlog_ip' => $ip,
 				'll_attemptlog_hash' => $hash,
-				'll_attemptlog_timestamp' => time(),
-			]);
+				'll_attemptlog_timestamp' => $time,
+			]);	
+		$id = $dbw->insertId();
+		$threshold = $GLOBALS['wgLinkLoginAttemptlogThreshold'];
+		
+		//Check if $wgLinkLoginAttemptlogNotify is set
+		if ($GLOBALS['wgLinkLoginAttemptlogNotify']) {
+			$recipient = [new MailAddress($GLOBALS['wgLinkLoginAttemptlogNotify'])];
+			
+			//Check if $wgLinkLoginAttemptlogThreshold is met
+			if ($id % $threshold == 0) {
+				$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+				$dbr = $lb->getConnectionRef( DB_REPLICA );
+				$res = $dbr->select( 
+					'll_attemptlog',
+					['ll_attemptlog_timestamp','ll_attemptlog_notification'],
+					['MOD(ll_attemptlog_id,' . $threshold . ') = 0'],
+					__METHOD__, 
+					['ORDER BY' => 'll_attemptlog_id DESC'],
+				);	
+				$attempts = [];
+				foreach ($res as $row) {
+					$attempts[] = [$row->ll_attemptlog_timestamp,$row->ll_attemptlog_notification];
+				}
+				
+				//Check if a Message has been sent in a set period amount of time
+				$pause = $GLOBALS['wgLinkLoginAttemptlogPause'];
+				$send = true;
+				foreach ($attempts as $attempt) {
+					if ($attempt[1] == true){
+						$last_notification = $attempt[0];
+						$diff = $time - $last_notification;
+						if ($diff < $pause){
+							$send = false;
+						}
+						continue;
+					}
+				}
+				//Send Notification if no Message has already been sent in a set period amount of time
+				if ($send == true) { 
+					$to = $recipient;
+					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
+					$subject = wfMessage('linklogin-attemptlog-notify-subject')->text();
+					$bodyText = wfMessage('linklogin-attemptlog-notify-body')->text();
+
+					$emailer = MediaWikiServices::getInstance()->getEmailer();
+					$status = $emailer->send(
+						$to,
+						$from,
+						$subject,
+						$bodyText,
+					);
+
+					if( !$status->ok ) {
+						$errors = [];
+						foreach( $status->errors as $error ) {
+							$errors[] = wfMessage( $error['message'], $error['params'] )->text();
+						}
+						die(var_dump( $errors ) );
+					} else {
+						$dbw = $lb->getConnectionRef( DB_PRIMARY );
+						$res = $dbw->update( 
+							'll_attemptlog',
+							['ll_attemptlog_notification' => true],
+							['ll_attemptlog_id' => $id],
+						);
+					}
+				}
+			}	
+		}
 	}
 }

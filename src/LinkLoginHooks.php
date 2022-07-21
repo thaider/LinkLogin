@@ -21,7 +21,6 @@ class LinkLoginHooks {
 	 */
 	public static function onGetPreferences( $user, &$preferences ) {
         $linkLoginUsers = LinkLogin::isLinkLoginUser( $user->getId() );
-
         if( $linkLoginUsers ) {
             $preferences = $GLOBALS['wgLinkLoginPreferences'];
             foreach( $preferences as $key => $preference ) {
@@ -146,6 +145,12 @@ class LinkLoginHooks {
 			'll_mailing',
 			'll_mailing_email',
 			__DIR__ . '/../sql/email.sql'
+		);
+
+		$updater->addExtensionField(
+			'll_attemptlog',
+			'll_attemptlog_notification',
+			__DIR__ . '/../sql/notification.sql'
 		);
 	}
 

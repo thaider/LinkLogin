@@ -72,6 +72,8 @@
 	"linklogin-attemptlog-timestamp": "Date",
 	"linklogin-attemptlog-ip": "IP",
 	"linklogin-attemptlog-hash": "Hash",
+	"linklogin-attemptlog-notify-subject": "Several unsuccessful login attempts detected",
+	"linklogin-attemptlog-notify-body": "{{fullurl:Special:LoginAttemptLog}}",
 	"action-populateloginlinks": "populate the user table with login links",
 	"action-mailings": "create and send mailings",
 	"action-loginlogs": "inspect login logs"

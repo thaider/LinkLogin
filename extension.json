@@ -52,6 +52,15 @@
 		},
 		"LinkLoginDelimiter": {
 			"value": ";"
+		},
+		"LinkLoginAttemptlogNotify": {
+			"value": false
+		},
+		"LinkLoginAttemptlogThreshold": {
+			"value" : 100
+		},
+		"LinkLoginAttemptlogPause": {
+			"value" : 86400
 		}
 	},
 	"AvailableRights": [
