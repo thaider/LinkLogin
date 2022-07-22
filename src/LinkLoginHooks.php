@@ -163,7 +163,9 @@ class LinkLoginHooks {
 	 * @return void
 	 */
 	public static function onParserFirstCallInit( Parser $parser ){
-		$parser->setFunctionHook( 'linklogin-recipients', [ self::class, 'renderLinkloginRecipients' ] );
+		$parser->setFunctionHook( 'linklogin-recipients', [ self::class, 'renderLinkLoginRecipients' ] );
+		$parser->setFunctionHook( 'linklogin-pref', [ self::class, 'renderLinkLoginPref' ] );
+
 	}
 
 
@@ -179,7 +181,7 @@ class LinkLoginHooks {
 	 * 
 	 * @return comma separated list of recipients' user names
 	 */
-	static function renderLinkloginRecipients( Parser $parser ) {
+	static function renderLinkLoginRecipients( Parser $parser ) {
 		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
 		if (!isset($options['mailing'])) {
 			return "Mailing must be set";
@@ -226,6 +228,9 @@ class LinkLoginHooks {
 	static function extractOptions( array $options ) {
 		$results = [];
 		foreach ( $options as $option ) {
+			if ($option == "") {
+				continue;
+			}
 			$pair = array_map( 'trim', explode( '=', $option, 2 ) );
 			if ( count( $pair ) === 2 ) {
 				$results[ $pair[0] ] = $pair[1];
@@ -236,4 +241,81 @@ class LinkLoginHooks {
 		}
 		return $results;
 	}
+
+
+	/**
+	 * Parser function {{#linklogin-pref:}}
+	 * 
+	 * Return list of Users with specific options. Parameters:
+	 * - option: WHERE Useroption is set or empty
+	 * - option=false: WHERE Useroption is NOT set or empty
+	 * - option=value: WHERE Useroption is equal to value
+	 * 
+	 * @param Parser $parser Parser
+	 * 
+	 * @return comma separated list of user names
+	 */
+	static function renderLinkLoginPref( Parser $parser ) {
+		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
+		if (count($options) == 0) {
+			return "option must be set";
+		}
+
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
+
+		$options = (array) $options;
+
+		$i = 0;
+		$null = stripslashes("\'\'");
+
+		foreach ($options as $option){
+			if ($option === true){
+				$conds = 'up_property = ' . '"' . array_keys($options)[$i] . '"' . ' AND up_value != X' . $null;
+				$users = $dbr->newSelectQueryBuilder()
+				->select('user_name')
+				->from('user_properties')
+				->join( 'user', NULL, 'user_properties.up_user=user.user_id')
+				->where($conds)
+				->caller(__METHOD__)
+				->fetchFieldValues();
+				$user_array[] = $users;
+				$i+=1;
+			} elseif ($option == "false") {
+				$conds = 'user_name NOT IN ' . '(SELECT user_name FROM user_properties JOIN `user` ON user_properties.up_user=user.user_id WHERE up_property =' . '"' . array_keys($options)[$i]  . '" AND up_value != X' . $null . ')
+				';
+				$users = $dbr->newSelectQueryBuilder()
+				->select('user_name')
+				->from('user_properties')
+				->join( 'user', NULL, 'user_properties.up_user=user.user_id')
+				->where($conds)
+				->caller(__METHOD__)
+				->fetchFieldValues();
+				$user_array[] = $users;
+				$i+=1;
+			} else {
+				$conds = 'up_property = ' . '"' . array_keys($options)[$i] . '"' . ' AND up_value = ' .  '"' . $option . '"';
+				$users = $dbr->newSelectQueryBuilder()
+				->select('user_name')
+				->from('user_properties')
+				->join( 'user', NULL, 'user_properties.up_user=user.user_id')
+				->where($conds)
+				->caller(__METHOD__)
+				->fetchFieldValues();
+				$user_array[] = $users;
+				$i+=1;
+			}
+		}
+
+		if (count($user_array) > 1){
+			$users = call_user_func_array('array_intersect',$user_array);
+		} elseif (count($user_array) == 1) {
+			$users = $user_array[0];
+		}
+		$users = array_unique($users);
+		$output = join($delimiter, $users);
+		return $output;
+	}
 }
+
