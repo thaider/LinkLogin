@@ -267,12 +267,11 @@ class LinkLoginHooks {
 
 		$options = (array) $options;
 
-		$i = 0;
 		$null = stripslashes("\'\'");
 
-		foreach ($options as $option){
+		foreach ($options as $key => $option){
 			if ($option === true){
-				$conds = 'up_property = ' . '"' . array_keys($options)[$i] . '"' . ' AND up_value != X' . $null;
+				$conds = 'up_property = ' . '"' . $key . '"' . ' AND up_value != X' . $null;
 				$users = $dbr->newSelectQueryBuilder()
 				->select('user_name')
 				->from('user_properties')
@@ -281,9 +280,8 @@ class LinkLoginHooks {
 				->caller(__METHOD__)
 				->fetchFieldValues();
 				$user_array[] = $users;
-				$i+=1;
 			} elseif ($option == "false") {
-				$conds = 'user_name NOT IN ' . '(SELECT user_name FROM user_properties JOIN `user` ON user_properties.up_user=user.user_id WHERE up_property =' . '"' . array_keys($options)[$i]  . '" AND up_value != X' . $null . ')
+				$conds = 'user_name NOT IN ' . '(SELECT user_name FROM user_properties JOIN `user` ON user_properties.up_user=user.user_id WHERE up_property =' . '"' . $key  . '" AND up_value != X' . $null . ')
 				';
 				$users = $dbr->newSelectQueryBuilder()
 				->select('user_name')
@@ -293,9 +291,8 @@ class LinkLoginHooks {
 				->caller(__METHOD__)
 				->fetchFieldValues();
 				$user_array[] = $users;
-				$i+=1;
 			} else {
-				$conds = 'up_property = ' . '"' . array_keys($options)[$i] . '"' . ' AND up_value = ' .  '"' . $option . '"';
+				$conds = 'up_property = ' . '"' . $key . '"' . ' AND up_value = ' .  '"' . $option . '"';
 				$users = $dbr->newSelectQueryBuilder()
 				->select('user_name')
 				->from('user_properties')
@@ -304,10 +301,10 @@ class LinkLoginHooks {
 				->caller(__METHOD__)
 				->fetchFieldValues();
 				$user_array[] = $users;
-				$i+=1;
 			}
 		}
 
+		$users = [];
 		if (count($user_array) > 1){
 			$users = call_user_func_array('array_intersect',$user_array);
 		} elseif (count($user_array) == 1) {
