@@ -406,6 +406,9 @@ class SpecialMailings extends SpecialPage {
 
 		$parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
 		$title = Title::newFromText( $mailing->ll_mailing_loginpage );
+		if( is_null( $title ) ) {
+			$title = Title::newMainPage();
+		}
 		$opt   = new ParserOptions;
 		
 		foreach( $recipients as $recipient ) {
