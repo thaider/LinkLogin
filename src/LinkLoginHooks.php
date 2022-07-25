@@ -247,7 +247,7 @@ class LinkLoginHooks {
 	 * Parser function {{#linklogin-pref:}}
 	 * 
 	 * Return list of Users with specific options. Parameters:
-	 * - option: WHERE Useroption is set or empty
+	 * - option: WHERE Useroption is set and NOT empty
 	 * - option=false: WHERE Useroption is NOT set or empty
 	 * - option=value: WHERE Useroption is equal to value
 	 * 
@@ -270,36 +270,47 @@ class LinkLoginHooks {
 		$null = stripslashes("\'\'");
 
 		foreach ($options as $key => $option){
+			// set and not empty
 			if ($option === true){
 				$conds = 'up_property = ' . '"' . $key . '"' . ' AND up_value != X' . $null;
 				$users = $dbr->newSelectQueryBuilder()
-				->select('user_name')
-				->from('user_properties')
-				->join( 'user', NULL, 'user_properties.up_user=user.user_id')
-				->where($conds)
-				->caller(__METHOD__)
-				->fetchFieldValues();
+					->select('user_name')
+					->from('user_properties')
+					->join( 'user', NULL, 'up_user=user_id')
+					->where($conds)
+					->caller(__METHOD__)
+					->fetchFieldValues();
 				$user_array[] = $users;
+
+			// not set or empty
 			} elseif ($option == "false") {
 				$conds = 'user_name NOT IN ' . '(SELECT user_name FROM user_properties JOIN `user` ON user_properties.up_user=user.user_id WHERE up_property =' . '"' . $key  . '" AND up_value != X' . $null . ')
 				';
+				$conds = 'user_name NOT IN (' . $dbr->newSelectQueryBuilder()
+					->select('user_name')
+					->from('user_properties')
+					->join('user', NULL, 'up_user=user_id')
+					->where('up_property = ' . '"' . $key . '"' . ' AND up_value != X' . $null)
+					->getSQL() . ')';
 				$users = $dbr->newSelectQueryBuilder()
-				->select('user_name')
-				->from('user_properties')
-				->join( 'user', NULL, 'user_properties.up_user=user.user_id')
-				->where($conds)
-				->caller(__METHOD__)
-				->fetchFieldValues();
+					->select('user_name')
+					->from('user_properties')
+					->join( 'user', NULL, 'up_user=user_id')
+					->where($conds)
+					->caller(__METHOD__)
+					->fetchFieldValues();
 				$user_array[] = $users;
+
+			// having a specific value
 			} else {
 				$conds = 'up_property = ' . '"' . $key . '"' . ' AND up_value = ' .  '"' . $option . '"';
 				$users = $dbr->newSelectQueryBuilder()
-				->select('user_name')
-				->from('user_properties')
-				->join( 'user', NULL, 'user_properties.up_user=user.user_id')
-				->where($conds)
-				->caller(__METHOD__)
-				->fetchFieldValues();
+					->select('user_name')
+					->from('user_properties')
+					->join( 'user', NULL, 'up_user=user_id')
+					->where($conds)
+					->caller(__METHOD__)
+					->fetchFieldValues();
 				$user_array[] = $users;
 			}
 		}
