@@ -421,10 +421,10 @@ class SpecialMailings extends SpecialPage {
 				if( !in_array($user->getId(), $sent) && !is_null( $to ) ) {
 					$to = [ new MailAddress( $to ) ];
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
-					$subject = $mailing->ll_mailing_subject;
+					$subject = trim( $mailing->ll_mailing_subject );
 					if( $mailing->ll_mailing_subjecttemplate ) {
 						$subjectWikiText = $this->expandTemplate( $recipient, $mailing, $mailing->ll_mailing_subjecttemplate );
-						$subject = strip_tags( $parser->parse( $subjectWikiText, $title, $opt, true, true )->getText() );
+						$subject = trim( strip_tags( $parser->parse( $subjectWikiText, $title, $opt, true, true )->getText() ) );
 					}
 					$options = [];
 					if( $mailing->ll_mailing_replyto ) {

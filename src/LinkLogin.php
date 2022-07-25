@@ -325,7 +325,7 @@ class LinkLogin {
 				if ($send == true) { 
 					$to = $recipient;
 					$from = new MailAddress( $GLOBALS['wgPasswordSender'], wfMessage('Emailsender')->text() );
-					$subject = wfMessage('linklogin-attemptlog-notify-subject')->text();
+					$subject = trim( wfMessage('linklogin-attemptlog-notify-subject')->text() );
 					$bodyText = wfMessage('linklogin-attemptlog-notify-body')->text();
 
 					$emailer = MediaWikiServices::getInstance()->getEmailer();
