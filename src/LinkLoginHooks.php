@@ -24,6 +24,19 @@ class LinkLoginHooks {
         if( $linkLoginUsers ) {
             $preferences = $GLOBALS['wgLinkLoginPreferences'];
             foreach( $preferences as $key => $preference ) {
+				if( isset($preference['groups']) ) {
+                    $ugm = MediaWikiServices::getInstance()->getUserGroupManager();
+                    $usergroup = $ugm->getUserGroups($user);
+                    $preference = (array)$preference['groups'];
+					foreach ($preference as $pref){
+						if (in_array($pref, $usergroup)){
+							continue 2;
+						} 
+					}
+					unset( $preferences[$key] );
+                }
+			}	 
+			foreach( $preferences as $key => $preference ) {
             	if( !isset( $preferences[$key]['type'] ) ) {
             		$preferences[$key]['type'] = 'text';
             	}
@@ -34,7 +47,7 @@ class LinkLoginHooks {
             	}
             	$preferences[$key]['section'] = 'personal';
             }
-
+			
         	return false;
         }
 	}
