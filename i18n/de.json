@@ -9,7 +9,7 @@
 	"editmailing": "Mailing bearbeiten",
 	"loginlog": "Login-Log",
 	"loginattemptlog": "Loginversuch-Log",
-	"linklogin-populated": "<code>user_email_token</code>-Felder für $1 Benutzer*in{{plural:$1||en}} wurde befüllt.",
+	"linklogin-populated": "<code>user_email_token</code>-Felder für $1 {{plural:$1|Benutzer*in wurde |Benutzer*innen wurden}} befüllt.",
 	"linklogin-reset": "Hash zurücksetzen",
 	"linklogin-reset-success": "<code>user_email_token</code> für Benutzer*in „$1“ wurde neu gesetzt.",
 	"linklogin-reset-fail": "<code>user_email_token</code> für Benutzer*in „$1“ konnte nicht neu gesetzt werden.",

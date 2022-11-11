@@ -32,7 +32,7 @@ class LinkLoginHooks {
             	} else {
             		$preferences[$key]['label'] = ucfirst( $key );
             	}
-            	$preferences[$key]['section'] = 'personal';
+            	$preferences[$key]['section'] = wfMessage('linklogin-pref-section-key')->text();
             }
 
         	return false;

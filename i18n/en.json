@@ -65,6 +65,7 @@
 	"linklogin-overview": "Overview",
 	"linklogin-dateformat": "Y/m/d",
 	"linklogin-datetimeformat": "Y/m/d H:i:s",
+	"linklogin-pref-section-key": "personal",
 	"linklogin-pref-email": "E-Mail",
 	"linklogin-loginlog-timestamp": "Date",
 	"linklogin-loginlog-user": "User",
