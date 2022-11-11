@@ -23,6 +23,9 @@ class LinkLoginHooks {
         $linkLoginUsers = LinkLogin::isLinkLoginUser( $user->getId() );
         if( $linkLoginUsers ) {
             $preferences = $GLOBALS['wgLinkLoginPreferences'];
+            if( !isset( $preferences['email'] ) ) {
+            	array_unshift( $preferences, ['email' => [ 'type' => 'email' ] ] );
+            }
             foreach( $preferences as $key => $preference ) {
             	if( !isset( $preferences[$key]['type'] ) ) {
             		$preferences[$key]['type'] = 'text';

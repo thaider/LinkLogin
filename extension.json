@@ -44,11 +44,7 @@
 			"value": []
 		},
 		"LinkLoginPreferences": {
-			"value" : {
-				"email": {
-					"type": "email"
-				}
-			}
+			"value": []
 		},
 		"LinkLoginDelimiter": {
 			"value": ";"
