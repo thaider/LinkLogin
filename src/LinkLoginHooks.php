@@ -24,7 +24,7 @@ class LinkLoginHooks {
         if( $linkLoginUsers ) {
             $preferences = $GLOBALS['wgLinkLoginPreferences'];
             if( !isset( $preferences['email'] ) ) {
-            	array_unshift( $preferences, ['email' => [ 'type' => 'email' ] ] );
+            	$preferences = array_merge( ['email' => [ 'type' => 'email' ] ], $preferences );
             }
             foreach( $preferences as $key => $preference ) {
             	if( !isset( $preferences[$key]['type'] ) ) {
