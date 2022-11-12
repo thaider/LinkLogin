@@ -20,41 +20,64 @@ class LinkLoginHooks {
 	 * @return void
 	 */
 	public static function onGetPreferences( $user, &$preferences ) {
-        $linkLoginUsers = LinkLogin::isLinkLoginUser( $user->getId() );
-        if( $linkLoginUsers ) {
-            $preferences = $GLOBALS['wgLinkLoginPreferences'];
-            if( !isset( $preferences['email'] ) ) {
-            	$preferences = array_merge( ['email' => [ 'type' => 'email' ] ], $preferences );
-            }
-            foreach( $preferences as $key => $preference ) {
+		$linkLoginUsers = LinkLogin::isLinkLoginUser( $user->getId() );
+		if( $linkLoginUsers ) {
+			$preferences = $GLOBALS['wgLinkLoginPreferences'];
+
+			// add preference email to the top of the list if it hasn't been set at a custom position
+			if( !isset( $preferences['email'] ) ) {
+				$preferences = array_merge( ['email' => [ 'type' => 'email' ] ], $preferences );
+			}
+
+			// should the preference only be shown for users in specific groups?
+			foreach( $preferences as $key => $preference ) {
 				if( isset($preference['groups']) ) {
-                    $ugm = MediaWikiServices::getInstance()->getUserGroupManager();
-                    $usergroup = $ugm->getUserGroups($user);
-                    $preference = (array)$preference['groups'];
-					foreach ($preference as $pref){
-						if (in_array($pref, $usergroup)){
+					$ugm = MediaWikiServices::getInstance()->getUserGroupManager();
+					$usergroups = $ugm->getUserGroups($user);
+					foreach( (array) $preference['groups'] as $group ) {
+						if( in_array( $group, $usergroups ) ) {
 							continue 2;
 						} 
 					}
 					unset( $preferences[$key] );
-                }
-			}	 
+				}
+			}
+
+			// should the preference only be shown to users in specific groups?
 			foreach( $preferences as $key => $preference ) {
-            	if( !isset( $preferences[$key]['type'] ) ) {
-            		$preferences[$key]['type'] = 'text';
-            	}
-            	if( wfMessage('linklogin-pref-' . $key)->exists() ) {
-            		$preferences[$key]['label-message'] = 'linklogin-pref-' . $key;
-            	} else {
-            		$preferences[$key]['label'] = ucfirst( $key );
-            	}
-            	if( !isset( $preferences[$key]['section'] ) ) {
-            		$preferences[$key]['section'] = wfMessage('linklogin-pref-section-key')->text();
-            	}
-            }
-			
-        	return false;
-        }
+				if( isset($preference['restricted']) ) {
+					$current_user = \RequestContext::getMain()->getUser();
+					$ugm = MediaWikiServices::getInstance()->getUserGroupManager();
+					$current_usergroups = $ugm->getUserGroups($current_user);
+					foreach( (array) $preference['restricted'] as $restricted ) {
+						if( in_array( $restricted, $current_usergroups ) ) {
+							continue 2;
+						} 
+					}
+					unset( $preferences[$key] );
+				}
+			}
+
+			foreach( $preferences as $key => $preference ) {
+				// set default type text
+				if( !isset( $preferences[$key]['type'] ) ) {
+					$preferences[$key]['type'] = 'text';
+				}
+
+				// use label message if it exists or the preference key as default label
+				if( wfMessage('linklogin-pref-' . $key)->exists() ) {
+					$preferences[$key]['label-message'] = 'linklogin-pref-' . $key;
+				} else {
+					$preferences[$key]['label'] = ucfirst( $key );
+				}
+
+				// set default section
+				if( !isset( $preferences[$key]['section'] ) ) {
+					$preferences[$key]['section'] = wfMessage('linklogin-pref-section-key')->text();
+				}
+			}
+			return false;
+		}
 	}
 
 
