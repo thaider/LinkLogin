@@ -225,7 +225,7 @@ class SpecialMailings extends SpecialPage {
 		$output->addWikiMsg( 'linklogin-sent', $newsentCount );
 		$output->addWikiMsg( 'linklogin-sent-total', $sentCount );
 		if( $unsentCount > 0 ) {
-			$columns = wfMessage('linklogin-columns')->exists() ? explode(',',wfMessage('linklogin-columns')->text()) : array_keys( $GLOBALS['wgLinkLoginPreferences'] );
+			$columns = wfMessage('linklogin-columns')->exists() ? explode(',',wfMessage('linklogin-columns')->text()) : $this->getPreferences();
 
 			$output->addWikiTextAsInterface( '<h3 class="mt-4 mb-3">' . wfMessage( 'linklogin-unsent', $unsentCount )->text() . ' (' . wfMessage( 'linklogin-sendable', $sendableCount )->text() . '): </h3>');
 
@@ -268,7 +268,7 @@ class SpecialMailings extends SpecialPage {
 						$output->addHTML( '<td>' . $recipient->{$column} . '</td>' );
 					} else {
 						$params = '';
-						foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+						foreach( $this->getPreferences() as $preference ) {
 							$params .= '|' . $preference . '=' . $recipient->{$preference};
 						}
 						$output->addHTML('<td>');
@@ -567,7 +567,7 @@ class SpecialMailings extends SpecialPage {
 	function enrichRecipient( $recipient ) {
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
 
-		foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+		foreach( $this->getPreferences() as $preference ) {
 			$recipient->{$preference} = $uom->getOption( $recipient->user, $preference );
 		}
 		return $recipient;
@@ -585,7 +585,7 @@ class SpecialMailings extends SpecialPage {
 	 */
 	function expandTemplate( $recipient, $mailing, $template ) {
 		$params = '';
-		foreach( array_keys( $GLOBALS['wgLinkLoginPreferences'] ) as $preference ) {
+		foreach( $this->getPreferences() as $preference ) {
 			$params .= '|' . $preference . '=' . $recipient->$preference;
 		}
 
@@ -653,6 +653,20 @@ class SpecialMailings extends SpecialPage {
 			$link = '<div>' . $link . '</div>';
 		}
 		return $link;
+	}
+
+
+	/**
+	 * Get preferences
+	 * 
+	 * @return Array Preference keys
+	 */
+	function getPreferences() {
+		$preferences = array_keys( $GLOBALS['wgLinkLoginPreferences'] );
+		if( !in_array( 'email', $preferences ) ) {
+			array_unshift($preferences, 'email');
+		}
+		return $preferences;
 	}
 
 

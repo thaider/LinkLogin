@@ -134,43 +134,17 @@ class LinkLogin {
 
 
 	/**
-	 * Check, if a user can login with a link, i.e. they
-	 * - are in one of the LinkLogin groups
-	 * - have a non empty user_email_token field and user_email_token_expires set to null
+	 * Check, if a user is in one of the LinkLogin groups
 	 * 
 	 * @param Integer $user ID of the user to check
 	 * @param Array $groups specify link login groups to use
 	 * 
-	 * @return Wikimedia\Rdbms\ResultWrapper|Array Query Result with user_name and user_email_token
+	 * @return Boolean
 	 */
 	public static function isLinkLoginUser($user, $groups = false) {
-		$groupUsers = self::getLinkLoginGroupUsers($groups);	
+		$groupUsers = self::getLinkLoginGroupUsers($groups);
 
-		if( count( $groupUsers ) == 0 ) {
-			return false;
-		}
-
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'user_id' => $user,
-			'user_email' => '',
-			"(TRIM('\0' FROM user_email_token)!='' OR not user_email_token is null)",
-			'user_email_token_expires' => null,
-
-		];
-		$isLinkLoginUser = $dbr->select(
-			'user',
-			['user_name','user_email_token'],
-			$conds,
-			__METHOD__,
-			[
-				'DISTINCT' => true,
-				'ORDER BY' => 'user_name'
-			]
-		) ?: [];
-
-		return $isLinkLoginUser->numRows() > 0;
+		return in_array($user, $groupUsers);
 	}
 
 
@@ -228,6 +202,10 @@ class LinkLogin {
 			$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
 		} else {
 			$groups = array_intersect( array_unique( (array)$GLOBALS['wgLinkLoginGroups'] ), $groups );
+		}
+
+		if( count($groups) == 0 ) {
+			return [];
 		}
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
