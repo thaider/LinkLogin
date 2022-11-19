@@ -226,6 +226,25 @@ class LinkLogin {
 		return $groupUsers;
 	}
 
+	/**
+	 * Get a list of all user groups 
+	 * 
+	 * @param Boolean $category set true to return only groups with a category field
+	 * 
+	 * @return Array groups
+	 */
+	public static function getLinkLoginGroups($onlyCategory = false) {
+		$all_groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+		$groups = [];
+		foreach( $all_groups as $key => $group ) {
+			if( is_array($group) ) {
+				$groups[] = $key;
+			} elseif( $onlyCategory == false) {
+				$groups[] = $group;
+			}
+		}
+		return $groups;
+	}
 
 	/**
 	 * Log successfull login

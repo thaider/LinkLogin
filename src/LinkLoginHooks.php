@@ -193,6 +193,11 @@ class LinkLoginHooks {
 			'll_attemptlog_notification',
 			__DIR__ . '/../sql/notification.sql'
 		);
+
+		$updater->addExtensionTable(
+			'll_mapping',
+			__DIR__ . '/../sql/mapping.sql'
+		);
 	}
 
 
