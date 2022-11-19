@@ -37,11 +37,12 @@
 		"Mailings": "MediaWiki\\Extension\\LinkLogin\\SpecialMailings",
 		"EditMailing": "MediaWiki\\Extension\\LinkLogin\\SpecialEditMailing",
 		"LoginLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginLog",
-		"LoginAttemptLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginAttemptLog"
+		"LoginAttemptLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginAttemptLog",
+		"LinkLoginUsers": "MediaWiki\\Extension\\LinkLogin\\SpecialLinkLoginUsers"
 	},
 	"config": {
 		"LinkLoginGroups": {
-			"value": []
+			"value" : []
 		},
 		"LinkLoginPreferences": {
 			"value": []

@@ -17,4 +17,5 @@ $specialPageAliases['en'] = [
     'EditMailing' => [ 'EditMailing', 'Edit Mailing' ],
     'LoginLog' => [ 'LoginLog', 'Login Log' ],
     'LoginAttemptLog' => [ 'LoginAttemptLog', 'Login Attempt Log' ],
+    'LinkLoginUsers' => [ 'LinkLoginUsers', 'Link Login Users']
 ];
