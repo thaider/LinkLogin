@@ -35,7 +35,7 @@ class SpecialEditMailing extends SpecialPage {
 
 		$special = SpecialPage::getTitleFor( 'EditMailing' );
 
-		$groups = array_flip( $GLOBALS['wgLinkLoginGroups'] );
+		$groups = array_flip( LinkLogin::getLinkLoginGroups() );
 		foreach( $groups as $key => &$group ) {
 			$group = $key;
 		}

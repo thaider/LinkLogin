@@ -17,7 +17,7 @@ class LinkLogin {
 	 * @return Integer Number of populated rows
 	 */
 	public static function populateLoginTokens($par = NULL) {
-		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+		$groups = self::getLinkLoginGroups();
 		
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -108,7 +108,7 @@ class LinkLogin {
 	 * @return Integer User ID
 	 */
 	public static function getUserFromToken( $token ) {
-		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+		$groups = self::getLinkLoginGroups();
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -199,9 +199,9 @@ class LinkLogin {
 	 */
 	public static function getLinkLoginGroupUsers($groups = false) {
 		if( !$groups ) {
-			$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+			$groups = array_unique( self::getLinkLoginGroups() );
 		} else {
-			$groups = array_intersect( array_unique( (array)$GLOBALS['wgLinkLoginGroups'] ), $groups );
+			$groups = array_intersect( self::getLinkLoginGroups(), $groups );
 		}
 
 		if( count($groups) == 0 ) {
@@ -233,17 +233,85 @@ class LinkLogin {
 	 * 
 	 * @return Array groups
 	 */
-	public static function getLinkLoginGroups($onlyCategory = false) {
-		$all_groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+	public static function getLinkLoginGroups($onlyWithCategory = false) {
+		$all_groups = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
 		$groups = [];
 		foreach( $all_groups as $key => $group ) {
 			if( is_array($group) ) {
 				$groups[] = $key;
-			} elseif( $onlyCategory == false) {
+			} elseif( $onlyWithCategory == false) {
 				$groups[] = $group;
 			}
 		}
 		return $groups;
+	}
+
+	/**
+	 * Get a list of all user groups of a certain Category
+	 * 
+	 * @param Boolean $category return only groups this category
+	 * 
+	 * @return Array groups
+	 */
+	public static function getLinkLoginGroupsByCategory($category = null) {
+		$all_groups = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$groups = [];
+		foreach( $all_groups as $key => $group ) {
+			if( is_array($group) ) {
+				foreach( $group as $cat_key => $categories){
+					if( is_array($categories) ) {
+						if( in_array($category, $categories) ){
+							$groups[] = $key;
+						}
+					} else if( $categories == $category){
+						$groups[] = $key;
+					}
+				}
+			}
+		}
+		return $groups;
+	}
+
+	/**
+	 * Get a list of all categories 
+	 * 
+	 * @return Array categories
+	 */
+	public static function getLinkLoginCategories() {
+		$all_categories = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$categories = [];
+		foreach( $all_categories as $group_categories ) {
+			if( is_array($group_categories) ) {
+				foreach( $group_categories as $group_category ) {
+					foreach( $group_category as $category ) {
+						$categories[] = $category; 
+					}
+				}
+			}
+		}
+		return $categories;
+	}
+
+	/**
+	 * Get a list of all categories of a certain group
+	 * 
+	 * @return Array categories
+	 */
+	public static function getLinkLoginCategoriesByGroup($group = null) {
+		$all_categories = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$categories = [];
+		foreach( $all_categories as $key => $group_categories ) {
+			if( is_array($group_categories) ) {
+				if( $key == $group){
+					foreach( $group_categories as $group_category ) {
+						foreach( $group_category as $category ) {
+							$categories[] = $category; 
+						}
+					}
+				}
+			}
+		}
+		return $categories;
 	}
 
 	/**

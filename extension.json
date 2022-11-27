@@ -32,13 +32,29 @@
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates",
 		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit"
 	},
+	"ResourceModules": {
+		"ext.linklogin.mapping": {
+			"localBasePath": "resources",
+			"remoteExtPath": "LinkLogin/resources",
+			"scripts": [
+				"ext.linklogin.mapping.js"
+			],
+			"styles": [],
+			"messages": [],
+			"dependencies": []
+		}
+	},
 	"SpecialPages": {
 		"PopulateLoginLinks": "MediaWiki\\Extension\\LinkLogin\\SpecialPopulateLoginLinks",
 		"Mailings": "MediaWiki\\Extension\\LinkLogin\\SpecialMailings",
 		"EditMailing": "MediaWiki\\Extension\\LinkLogin\\SpecialEditMailing",
 		"LoginLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginLog",
 		"LoginAttemptLog": "MediaWiki\\Extension\\LinkLogin\\SpecialLoginAttemptLog",
-		"LinkLoginUsers": "MediaWiki\\Extension\\LinkLogin\\SpecialLinkLoginUsers"
+		"LinkLoginUsers": "MediaWiki\\Extension\\LinkLogin\\SpecialLinkLoginUsers",
+		"LinkLoginPages": "MediaWiki\\Extension\\LinkLogin\\SpecialLinkLoginPages"
+	},
+	"APIModules": {
+		"llmapping": "MediaWiki\\Extension\\LinkLogin\\ApiLLmapping"
 	},
 	"config": {
 		"LinkLoginGroups": {
