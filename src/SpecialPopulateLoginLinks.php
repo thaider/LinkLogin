@@ -34,7 +34,7 @@ class SpecialPopulateLoginLinks extends SpecialPage {
 
 		$list_heading = wfMessage('linklogin-list-heading')->text();
 		$output->addWikiTextAsInterface( '===' . $list_heading . '===' );
-		$groups = array_unique( (array)$GLOBALS['wgLinkLoginGroups'] );
+		$groups = LinkLogin::getLinkLoginGroups();
 		$groupUsers = LinkLogin::getLinkLoginGroupUsers();
 		$output->addWikiMsg( 'linklogin-groupcount', count( $groupUsers ), join(', ', $groups) );
 		$users = LinkLogin::getLinkLoginUsers();
