@@ -117,7 +117,7 @@ class SpecialEditMailing extends SpecialPage {
 				$email += 1;
 			}
 		}
-		if ($email == 1 && $mailing->ll_mailing_email == 'email') {
+		if ($email == 1 && isset($par) && $mailing->ll_mailing_email == 'email') {
 			$formDescriptor['email']['type'] = 'hidden';
 		}
 

@@ -25,6 +25,9 @@ class ApiLLmapping extends ApiBase {
 			case "unmap":
 				$status = self::ll_unmap($user,$page);
 				break;
+			case "setGroup":
+				$status = self::ll_setGroup($user,$page);
+				break;
 			default:
 				return 0;
 		}
@@ -60,6 +63,7 @@ class ApiLLmapping extends ApiBase {
 	}
 
     public function ll_map($user, $page){
+		//get user_id
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
@@ -74,6 +78,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 		
+		//get page_id
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
 			'page_title' => $page
@@ -87,6 +92,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 		
+		//insert a relation between user_id and page_id into table ll_mapping
 		if( !empty( $user_id ) && !empty( $page_id ) ) {
 			$dbw = $lb->getConnectionRef( DB_PRIMARY );
 			$res = $dbw->insert( 
@@ -104,6 +110,8 @@ class ApiLLmapping extends ApiBase {
 
     public function ll_unmap($user, $page){
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+
+		//get user_id
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
 			'user_name' => $user
@@ -117,6 +125,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 		
+		//get page_id
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
 			'page_title' => $page
@@ -130,6 +139,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 
+		//delete entry from ll_mapping where user_id && page_id
 		if( !empty( $user_id ) && !empty( $page_id ) ) {
 			$dbw = $lb->getConnectionRef( DB_PRIMARY );
 			$conds = [
@@ -146,6 +156,85 @@ class ApiLLmapping extends ApiBase {
 		}
 		return 1;
     }
+
+	public function ll_setGroup($user, $page){
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+
+		//get user_id
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$conds = [
+			'user_name' => $user
+        ];
+		$user_id = $dbr->selectField(
+			'user',
+			'user_id',
+			$conds,
+            __METHOD__,
+            [],
+            []
+		) ?: [];
+
+		//get page_id
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$conds = [
+			'page_title' => $page
+        ];
+		$page_id = $dbr->selectField(
+			'page',
+			'page_id',
+			$conds,
+            __METHOD__,
+            [],
+            []
+		) ?: [];
+
+		//get all Categories connected to Page
+		if( !empty( $user_id ) && !empty( $page_id ) ) {
+			$dbr = $lb->getConnectionRef( DB_REPLICA );
+			$conds = [
+				'cl_from' => $page_id
+			];
+			$categories = $dbr->selectFieldValues(
+				'categorylinks',
+				'cl_to',
+				$conds,
+				__METHOD__,
+				[],
+				[]
+			) ?: [];
+
+			//get Groups connected to Categories
+			if( !empty( $categories ) ) {
+				$groups = [];
+				foreach($categories as $category){
+					$group_array = LinkLogin::getLinkLoginGroupsByCategory($category);
+					foreach( $group_array as $group ){
+						$groups[] = $group;
+					}
+				}
+				//insert all Groups(relevant to Page) in relation with User into user_groups 
+				if( !empty( $groups ) ) {
+					foreach( $groups as $group ){
+						$dbw = $lb->getConnectionRef( DB_PRIMARY );
+						$res = $dbw->insert( 
+							'user_groups',
+							[
+								'ug_user' => $user_id,
+								'ug_group' => $group,
+							]);
+					}
+				} else {
+					return "empty groups";
+				}
+			} else {
+				return "empty categories";
+			} 
+		} else {
+			return "empty user_id or page_id";
+		}
+		return 1;
+    }
+
 }
 ?>
 

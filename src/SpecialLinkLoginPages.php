@@ -34,7 +34,7 @@ class SpecialLinkLoginPages extends SpecialPage {
         $output = $this->getOutput();
         $categories = LinkLogin::getLinkLoginCategories();
         $output->addHTML('<table class="table table-bordered table-sm"><tr>');
-        $output->addHTML('<th>' . 'Kategorien' . '</th>');
+        $output->addHTML('<th>' . wfMessage("linklogin-categories")->text() . '</th>');
         $output->addHTML('</tr>');
         foreach( $categories as $category ) {
             $output->addHTML('<tr>');
@@ -73,8 +73,8 @@ class SpecialLinkLoginPages extends SpecialPage {
 		) ?: [];
         
         $output->addHTML('<table class="table table-bordered table-sm"><tr>');
-        $output->addHTML('<th>' . 'Page' . '</th>');
-        $output->addHTML('<th>' . 'User' . '</th>');
+        $output->addHTML('<th>' . wfMessage("linklogin-page")->text() . '</th>');
+        $output->addHTML('<th>' . wfMessage("linklogin-user")->text() . '</th>');
         $output->addHTML('</tr>');
 
         //Hier Inhalte
@@ -100,9 +100,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 
             if( !empty( $user ) ) {
                 $output->addHTML('<td>');
-                $output->addHTML('<span>' . $user . '</span>');
+                $output->addHTML('<span>' . $user . '</span>' . " ");
                 $output->addHTML('<i class="fa fa-pen edit"></i>');
-                $output->addHTML('<a class="unlink pages" style="float:right">' . '&times;' . '</a>');
+                $output->addHTML('<a href="#" class="unlink pages" style="float:right">' . '&times;' . '</a>');
                 $output->addHTML('</td>');
             } else {             
                 foreach( $groups as $group ) {
@@ -125,20 +125,24 @@ class SpecialLinkLoginPages extends SpecialPage {
                 $output->addHTML('<td>');
                 $output->addHTML('<div class="dropdown">');
                 $output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
-                $output->addHTML('Neuem User zuordnen');
+                $output->addHTML(wfMessage("linklogin-assign-user")->text());
                 $output->addHTML('</button>');
                 $output->addHTML('<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">');
                 foreach( $users as $user ){
-                    $output->addHTML('<a class="dropdown-item user"' . $page . '">' . $user . '</a>');
+                    $output->addHTML('<a href="#" class="dropdown-item user"' . $page . '">' . $user . '</a>');
                 }
                 $output->addHTML('</div>');
 
                 //Neuen User anlegen
                 $output->addHTML('<div class="md-form amber-textarea active-amber-textarea">');
-                $output->addHTML('<label for="username_input">Einen neuen User anlegen</label>');
-                $output->addHTML('<textarea id="username_input" class="md-textarea form-control" rows="1"></textarea>');
-                $output->addHTML('<h5 id="usercheck" style="color: red;">**Username is missing</h5>');
-                $output->addHTML('<button type="button" class="btn btn-primary create">Anlegen</button>');
+                $output->addHTML('<label for="username">'. wfMessage("linklogin-user-create-long")->text() . '</label>');
+                $output->addHTML('<input class="username md-textarea form-control" rows="1">');
+                $output->addHTML('<button type="button" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
+                $output->addHTML('<div>');
+                $output->addHTML('<small class="userErrorEmpty text-danger">' . wfMessage("linklogin-user-error-empty")->text() . '</small>');
+                $output->addHTML('<small class="userErrorSpecial text-danger">' . wfMessage("linklogin-user-error-special")->text() . '</small>');
+                $output->addHTML('<small class="userErrorExists text-danger">' . wfMessage("linklogin-user-error-exists")->text() . '</small>');
+                $output->addHTML('</div>');
                 $output->addHTML('</div>');
                 $output->addHTML('</tr>');
             }
