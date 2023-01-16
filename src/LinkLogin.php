@@ -199,7 +199,7 @@ class LinkLogin {
 	 */
 	public static function getLinkLoginGroupUsers($groups = false) {
 		if( !$groups ) {
-			$groups = array_unique( self::getLinkLoginGroups() );
+			$groups = self::getLinkLoginGroups() ;
 		} else {
 			$groups = array_intersect( self::getLinkLoginGroups(), $groups );
 		}

@@ -32,7 +32,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
         $output = $this->getOutput();
         $groups = LinkLogin::getLinkLoginGroups(true);
         $output->addHTML('<table class="table table-bordered table-sm"><tr>');
-        $output->addHTML('<th>' . 'Gruppen' . '</th>');
+        $output->addHTML('<th>' . wfMessage('linklogin-groups')->text() . '</th>');
         $output->addHTML('</tr>');
         $output->addHTML('<tr>');
         foreach( $groups as $group ) {
@@ -97,7 +97,6 @@ class SpecialLinkLoginUsers extends SpecialPage {
             }   
         }
 
-
         //get pages belonging to a category
         //Nach mehreren Kategorien gleichzeitig suchen?
         $unlinked_pages = [];
@@ -133,10 +132,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
         }
 
         $output->addHTML('<table class="table table-bordered table-sm"><tr>');
-        $output->addHTML('<th>' . 'User' . '</th>');
-        $output->addHTML('<th>' . 'Pages' . '</th>');
+        $output->addHTML('<th>' . wfMessage("linklogin-username")->text() . '</th>');
+        $output->addHTML('<th>' . wfMessage("linklogin-pages")->text() . '</th>');
         $output->addHTML('</tr>');
-        //Hier Inhalte
+
         foreach( $users as $user ) {
             $output->addHTML('<tr id=' . '"' . $user->user_name . '"' . '>');
             $output->addHTML('<td>' . $user->user_name . '</td>');
@@ -146,20 +145,22 @@ class SpecialLinkLoginUsers extends SpecialPage {
                 foreach( $linked_pages[$user->user_name] as $linked_page){
                     $output->addHTML('<li>');
                     $output->addHTML('<span>' . $linked_page . '</span>');
-                    $output->addHTML('<a class="unlink users" style="float:right">' . '&times;' . '</a>');
+                    $output->addHTML('<a href="#" class="unlink users" style="float:right">' . '&times;' . '</a>');
                     $output->addHTML('</li>');
                 }
                 $output->addHTML('</ul>');
             }
-            $output->addHTML('<div class="dropdown">');
-            $output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
-            $output->addHTML('Neue Seite zuordnen');
-            $output->addHTML('</button>');
-            $output->addHTML('<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">');
-            foreach($unlinked_pages as $unlinked_page){
-                //nur Pages zeigen, die dem User noch nicht zugeordnet ist
-                if(!in_array($unlinked_page,$linked_pages)){
-                    $output->addHTML('<a class="dropdown-item pages"' . $user->user_name . '">' . $unlinked_page . '</a>');
+            if( !empty( $unlinked_pages ) ){
+                $output->addHTML('<div class="dropdown">');
+                $output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
+                $output->addHTML(wfMessage('linklogin-assign-page')->text());
+                $output->addHTML('</button>');
+                $output->addHTML('<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">');
+                foreach($unlinked_pages as $unlinked_page){
+                    //nur Pages zeigen, die dem User noch nicht zugeordnet ist
+                    if(!in_array($unlinked_page,$linked_pages)){
+                        $output->addHTML('<a href="#" class="dropdown-item pages"' . $user->user_name . '">' . $unlinked_page . '</a>');
+                    }
                 }
             }
            
