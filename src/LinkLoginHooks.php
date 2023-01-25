@@ -5,6 +5,8 @@ namespace MediaWiki\Extension\LinkLogin;
 use \MediaWiki\MediaWikiServices;
 use DatabaseUpdater;
 use Parser;
+use OutputPage;
+use Skin;
 
 /**
  * A wrapper class for the hooks of the LinkLogin extension.
@@ -370,6 +372,18 @@ class LinkLoginHooks {
 		$users = array_unique($users);
 		$output = join($delimiter, $users);
 		return $output;
+	}
+
+	/**
+	 * Load LinkLogin Modules, i.e. scripts, on every Page
+	 * 
+	 * @param OutputPage $out
+	 * @param Skin $skin
+	 * 
+	 * @return void
+	 */
+	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
+		$out->addModules( 'ext.linklogin' );
 	}
 }
 

@@ -30,16 +30,19 @@
 		"GetPreferences": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onGetPreferences",
 		"UserLoadAfterLoadFromSession": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onUserLoadAfterLoadFromSession",
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates",
-		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit"
+		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit",
+		"BeforePageDisplay": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onBeforePageDisplay"
 	},
 	"ResourceModules": {
-		"ext.linklogin.mapping": {
+		"ext.linklogin": {
 			"localBasePath": "resources",
 			"remoteExtPath": "LinkLogin/resources",
 			"scripts": [
 				"ext.linklogin.mapping.js"
 			],
-			"styles": [],
+			"styles": [
+				"ext.linklogin.css"
+			],
 			"messages": [],
 			"dependencies": []
 		}

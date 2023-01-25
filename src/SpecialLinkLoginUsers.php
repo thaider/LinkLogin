@@ -51,7 +51,6 @@ class SpecialLinkLoginUsers extends SpecialPage {
 	 */
 	function showGroupDetails($par) {
         $output = $this->getOutput();
-        $output->addModules( 'ext.linklogin.mapping' );
 
         //get users
         $lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -138,7 +137,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
         foreach( $users as $user ) {
             $output->addHTML('<tr id=' . '"' . $user->user_name . '"' . '>');
-            $output->addHTML('<td>' . $user->user_name . '</td>');
+            $output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit"></i></a>' . '</td>');
             $output->addHTML('<td>');
             if( array_key_exists($user->user_name, $linked_pages)){
                 $output->addHTML('<ul>');

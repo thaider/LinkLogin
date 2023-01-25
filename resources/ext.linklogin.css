@@ -1,0 +1,15 @@
+.mw-prefs-buttons a {
+    display:none;
+  }
+
+div.mw-htmlform-ooui-wrapper.oo-ui-layout.oo-ui-panelLayout:first-child form[action="/w/index.php"][method="get"] > .mw-htmlform-field-HTMLUserTextField {
+    display:none;
+}
+
+div.mw-htmlform-ooui-wrapper.oo-ui-layout.oo-ui-panelLayout:first-child form[action="/w/index.php"][method="get"] > .mw-htmlform-submit-buttons {
+    display:none;
+}
+
+a i.fa.fa-pen.edit {
+    color:black;
+}
