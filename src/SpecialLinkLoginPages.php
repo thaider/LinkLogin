@@ -52,9 +52,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 	 */
 	function showCategoryDetails($par) {
         $output = $this->getOutput();
-        $output->addModules( 'ext.linklogin.mapping' );
         $groups = LinkLogin::getLinkLoginGroupsByCategory($par);
-
 
         $lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
         $dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -101,7 +99,7 @@ class SpecialLinkLoginPages extends SpecialPage {
             if( !empty( $user ) ) {
                 $output->addHTML('<td>');
                 $output->addHTML('<span>' . $user . '</span>' . " ");
-                $output->addHTML('<i class="fa fa-pen edit"></i>');
+                $output->addHTML('<a href="#"><i class="fa fa-pen edit"></i></a>');
                 $output->addHTML('<a href="#" class="unlink pages" style="float:right">' . '&times;' . '</a>');
                 $output->addHTML('</td>');
             } else {             
@@ -134,16 +132,14 @@ class SpecialLinkLoginPages extends SpecialPage {
                 $output->addHTML('</div>');
 
                 //Neuen User anlegen
-                $output->addHTML('<div class="md-form amber-textarea active-amber-textarea">');
+                $output->addHTML('<form class="user-create" novalidate>');
                 $output->addHTML('<label for="username">'. wfMessage("linklogin-user-create-long")->text() . '</label>');
                 $output->addHTML('<input class="username md-textarea form-control" rows="1">');
-                $output->addHTML('<button type="button" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
-                $output->addHTML('<div>');
+                $output->addHTML('<button type="button" class="btn btn-primary create" style="margin:5px 10px 0px 0px">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
                 $output->addHTML('<small class="userErrorEmpty text-danger">' . wfMessage("linklogin-user-error-empty")->text() . '</small>');
                 $output->addHTML('<small class="userErrorSpecial text-danger">' . wfMessage("linklogin-user-error-special")->text() . '</small>');
                 $output->addHTML('<small class="userErrorExists text-danger">' . wfMessage("linklogin-user-error-exists")->text() . '</small>');
-                $output->addHTML('</div>');
-                $output->addHTML('</div>');
+                $output->addHTML('</form>');
                 $output->addHTML('</tr>');
             }
         }

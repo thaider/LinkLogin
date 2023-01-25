@@ -33,8 +33,9 @@ jQuery( function( $ ) {
     callUnmap(user,page);
   }); 
 
-  $(".edit").click(function() {
-    const user = $(this).siblings("span").text();
+  $(".edit").click(function( e ) {
+    e.preventDefault();
+    const user = $(this).parents().siblings("span").text();
     const editURL = origin + '/w' + '/index.php' + '/special:edituser' + '/' + user;
     window.open(editURL, '_blank');
   }); 
