@@ -130,45 +130,46 @@ class SpecialLinkLoginUsers extends SpecialPage {
             }
         }
 
+        $output->addHTML('<container id="linklogin-body">');
         $output->addHTML('<table class="table table-bordered table-sm"><tr>');
         $output->addHTML('<th>' . wfMessage("linklogin-username")->text() . '</th>');
         $output->addHTML('<th>' . wfMessage("linklogin-pages")->text() . '</th>');
         $output->addHTML('</tr>');
 
         foreach( $users as $user ) {
-            $output->addHTML('<tr id=' . '"' . $user->user_name . '"' . '>');
+            $user_name = str_replace(' ', '_', $user->user_name);
+            $output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
             $output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit"></i></a>' . '</td>');
-            $output->addHTML('<td>');
+            $output->addHTML('<td id="' . $user_name . 'Pages">');
             if( array_key_exists($user->user_name, $linked_pages)){
-                $output->addHTML('<ul>');
+                $output->addHTML('<ul id="' . $user_name . 'List">');
                 foreach( $linked_pages[$user->user_name] as $linked_page){
-                    $output->addHTML('<li>');
+                    $output->addHTML('<li id="item' . $linked_page . '">');
                     $output->addHTML('<span>' . $linked_page . '</span>');
-                    $output->addHTML('<a href="#" class="unlink users" style="float:right">' . '&times;' . '</a>');
+                    $output->addHTML('<a href="#" class="unlink pages" style="float:right">' . '&times;' . '</a>');
                     $output->addHTML('</li>');
                 }
                 $output->addHTML('</ul>');
             }
-            if( !empty( $unlinked_pages ) ){
+            //if( !empty( $unlinked_pages ) ){
                 $output->addHTML('<div class="dropdown">');
                 $output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
                 $output->addHTML(wfMessage('linklogin-assign-page')->text());
                 $output->addHTML('</button>');
-                $output->addHTML('<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">');
+                $output->addHTML('<div class="dropdown-menu pageslist" aria-labelledby="dropdownMenuButton">');
                 foreach($unlinked_pages as $unlinked_page){
                     //nur Pages zeigen, die dem User noch nicht zugeordnet ist
                     if(!in_array($unlinked_page,$linked_pages)){
-                        $output->addHTML('<a href="#" class="dropdown-item pages"' . $user->user_name . '">' . $unlinked_page . '</a>');
+                        $output->addHTML('<a href="#" class="dropdown-item pages ' . $unlinked_page . '">' . $unlinked_page . '</a>');
                     }
                 }
-            }
-           
+            //}
             $output->addHTML('</div></div>');
             $output->addHTML('</td>');
             $output->addHTML('</tr>');
         }
 		$output->addHTML('</table>');
-
+        $output->addHTML('</container>');
     }
 
 

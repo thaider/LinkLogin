@@ -54,6 +54,7 @@ class SpecialLinkLoginPages extends SpecialPage {
         $output = $this->getOutput();
         $groups = LinkLogin::getLinkLoginGroupsByCategory($par);
 
+        //get Pages
         $lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
         $dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
@@ -70,12 +71,13 @@ class SpecialLinkLoginPages extends SpecialPage {
             ]
 		) ?: [];
         
+        $output->addHTML('<container id="linklogin-body">');
         $output->addHTML('<table class="table table-bordered table-sm"><tr>');
         $output->addHTML('<th>' . wfMessage("linklogin-page")->text() . '</th>');
         $output->addHTML('<th>' . wfMessage("linklogin-user")->text() . '</th>');
         $output->addHTML('</tr>');
 
-        //Hier Inhalte
+        //get Users corresponding to pages 
         foreach( $pages as $page ) {
             $dbr = $lb->getConnectionRef( DB_REPLICA );
 		    $conds = [
@@ -97,10 +99,10 @@ class SpecialLinkLoginPages extends SpecialPage {
             $output->addHTML('<td>' . $page . '</td>');
 
             if( !empty( $user ) ) {
-                $output->addHTML('<td>');
+                $output->addHTML('<td id=' . $page . 'User' . '>');
                 $output->addHTML('<span>' . $user . '</span>' . " ");
                 $output->addHTML('<a href="#"><i class="fa fa-pen edit"></i></a>');
-                $output->addHTML('<a href="#" class="unlink pages" style="float:right">' . '&times;' . '</a>');
+                $output->addHTML('<a href="#" class="unlink users" style="float:right">' . '&times;' . '</a>');
                 $output->addHTML('</td>');
             } else {             
                 foreach( $groups as $group ) {
@@ -118,32 +120,37 @@ class SpecialLinkLoginPages extends SpecialPage {
                         'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
                         ]
                     ) ?: [];
-                }
-            
-                $output->addHTML('<td>');
+                }                
+                //User Column
+                $output->addHTML('<td id=' . $page . 'User' . '>');
+                $output->addHTML('<container id='. $page . 'Fragment>');
                 $output->addHTML('<div class="dropdown">');
                 $output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
                 $output->addHTML(wfMessage("linklogin-assign-user")->text());
                 $output->addHTML('</button>');
                 $output->addHTML('<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">');
                 foreach( $users as $user ){
-                    $output->addHTML('<a href="#" class="dropdown-item user"' . $page . '">' . $user . '</a>');
+                    $output->addHTML('<a href="#" class="dropdown-item user">' . $user . '</a>');
                 }
                 $output->addHTML('</div>');
 
                 //Neuen User anlegen
                 $output->addHTML('<form class="user-create" novalidate>');
                 $output->addHTML('<label for="username">'. wfMessage("linklogin-user-create-long")->text() . '</label>');
-                $output->addHTML('<input class="username md-textarea form-control" rows="1">');
+                $output->addHTML('<input id="' . $page .'Inputfield" class="username md-textarea form-control" rows="1">');
                 $output->addHTML('<button type="button" class="btn btn-primary create" style="margin:5px 10px 0px 0px">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
-                $output->addHTML('<small class="userErrorEmpty text-danger">' . wfMessage("linklogin-user-error-empty")->text() . '</small>');
-                $output->addHTML('<small class="userErrorSpecial text-danger">' . wfMessage("linklogin-user-error-special")->text() . '</small>');
-                $output->addHTML('<small class="userErrorExists text-danger">' . wfMessage("linklogin-user-error-exists")->text() . '</small>');
+                $output->addHTML('<small id="' . $page . 'userError" class="userError text-danger"></small>');
                 $output->addHTML('</form>');
+                $output->addHTML('</td>');
+                $output->addHTML('</container>');
                 $output->addHTML('</tr>');
             }
         }
 	    $output->addHTML('</table>');
+        $output->addHTML('</container>');
+        $output->addHTML('<p id="messageEmpty" hidden>' . wfMessage("linklogin-user-error-empty")->text() . '</p>');
+        $output->addHTML('<p id="messageSpecial" hidden>' . wfMessage("linklogin-user-error-special")->text() . '</p>');
+        $output->addHTML('<p id="messageExists" hidden>' . wfMessage("linklogin-user-error-exists")->text() . '</p>');
     }
 
 
