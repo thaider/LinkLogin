@@ -34,7 +34,7 @@ class ApiLLmapping extends ApiBase {
 		
 		$this->getResult()->addValue(
 			null,
-			"status",
+			"value",
 			$status
 		);
     }
