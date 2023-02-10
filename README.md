@@ -22,19 +22,64 @@ The extension uses Bootstrap classes and therefore works best with skins based o
 
 ## Usage
 
-Minimum Setup:
+Minimal Setup:
 
-1. define `$wgLinkLoginGroups` in `LocalSettings.php`, e.g.
+Don't forget to run the database updates:
 
 ```
-$wgLinkLoginGroups = [ 'contact' ];
+php maintenance/update.php
 ```
+
+Load the extension and define `$wgLinkLoginGroups` in `LocalSettings.php`, e.g.
+
+```
+wfLoadExtension('LinkLogin');
+$wgLinkLoginGroups = [
+  'contact' => [
+    'categories' => [
+      'MyCategory'
+    ]
+  ]
+];
+```
+
+Make sure the EditUser extension is also installed.
+
+Now if you have a page in the `MyCategory` category, you can go to `Special:LinkLogin Pages` and link the page to a user. Edit the user to add an email address. After that, on `Special:Mailings` you can create a mailing.
+
+Make sure that the SMTP server to send Mails is configured correctly.
+
 
 ## Configuration Options
 
 ### `$wgLinkLoginGroups`
 
 Use this configuration option to define groups whose members can be LinkLogin members. Only members of these groups can be recipients for mailings.
+
+```
+$wgLinkLoginGroups = [
+  'contact' => [
+    'categories' => [
+      'MyCategory'
+    ]
+  ]
+];
+```
+
+
+### `$wgLinkLoginCategories`
+
+Use this to define optional configuration options for specific categories. Currently the only available option is `filter`.
+
+Example:
+
+```
+$wgLinkLoginCategories = [
+	'MyCategory' => [
+		'filter' => '[[MyProperty::true]]',
+	]
+];
+```
 
 ### `$wgLinkLoginPreferences`
 
