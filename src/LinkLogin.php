@@ -281,7 +281,7 @@ class LinkLogin {
 	 * @return Array categories
 	 */
 	public static function getLinkLoginCategories() {
-		$groups = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$groups = $GLOBALS['wgLinkLoginGroups'];
 		$categories = [];
 		foreach( $groups as $group ) {
 			if( isset( $group['categories'] ) ) {
