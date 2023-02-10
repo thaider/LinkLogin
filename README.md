@@ -22,6 +22,13 @@ The extension uses Bootstrap classes and therefore works best with skins based o
 
 ## Usage
 
+Minimum Setup:
+
+1. define `$wgLinkLoginGroups` in `LocalSettings.php`, e.g.
+
+```
+$wgLinkLoginGroups = [ 'contact' ];
+```
 
 ## Configuration Options
 
@@ -106,6 +113,10 @@ Shows successful logins.
 ### Special:LoginAttemptLog
 
 Shows login attempts with invalid hashes.
+
+### Special:LinkLogin Users
+
+### Special:LinkLogin Pages
 
 
 ## Rights
