@@ -226,6 +226,7 @@ class LinkLogin {
 		return $groupUsers;
 	}
 
+
 	/**
 	 * Get a list of all user groups 
 	 * 
@@ -245,6 +246,7 @@ class LinkLogin {
 		}
 		return $groups;
 	}
+
 
 	/**
 	 * Get a list of all user groups of a certain Category
@@ -272,25 +274,25 @@ class LinkLogin {
 		return $groups;
 	}
 
+
 	/**
 	 * Get a list of all categories 
 	 * 
 	 * @return Array categories
 	 */
 	public static function getLinkLoginCategories() {
-		$all_categories = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$groups = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
 		$categories = [];
-		foreach( $all_categories as $group_categories ) {
-			if( is_array($group_categories) ) {
-				foreach( $group_categories as $group_category ) {
-					foreach( $group_category as $category ) {
-						$categories[] = $category; 
-					}
+		foreach( $groups as $group ) {
+			if( isset( $group['categories'] ) ) {
+				foreach( $group['categories'] as $category ) {
+					$categories[] = ucfirst( $category ); 
 				}
 			}
 		}
 		return $categories;
 	}
+
 
 	/**
 	 * Get a list of all categories of a certain group
@@ -313,6 +315,7 @@ class LinkLogin {
 		}
 		return $categories;
 	}
+
 
 	/**
 	 * Log successfull login
