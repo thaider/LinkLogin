@@ -302,14 +302,10 @@ class LinkLogin {
 	public static function getLinkLoginCategoriesByGroup($group = null) {
 		$all_categories = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
 		$categories = [];
-		foreach( $all_categories as $key => $group_categories ) {
-			if( is_array($group_categories) ) {
-				if( $key == $group){
-					foreach( $group_categories as $group_category ) {
-						foreach( $group_category as $category ) {
-							$categories[] = $category; 
-						}
-					}
+		foreach( $all_categories as $group_name => $group_categories ) {
+			if( $group_name == $group && isset( $group_categories['categories'] ) ) {
+				foreach( $group_categories['categories'] as $group_category ) {
+					$categories[] = ucfirst( $group_category ); 
 				}
 			}
 		}
