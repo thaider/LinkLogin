@@ -62,9 +62,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$conds = [
 			'cl_to' => $par
 		];
-		$pages = $dbr->selectFieldValues(
+		$pages = $dbr->select(
 			['categorylinks','page'],
-			'page_title',
+			['page_title','page_id'],
 			$conds,
 			__METHOD__,
 			[],
@@ -83,7 +83,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 		foreach( $pages as $page ) {
 			$dbr = $lb->getConnectionRef( DB_REPLICA );
 			$conds = [
-				'page_title' => $page
+				'page_title' => $page->page_title
 			];
 			$user = $dbr->selectField(
 				['ll_mapping','page','user'],
@@ -97,11 +97,11 @@ class SpecialLinkLoginPages extends SpecialPage {
 				]
 			) ?: [];
 
-			$output->addHTML('<tr id=' . $page . '>');
-			$output->addHTML('<td>' . $page . '</td>');
+			$output->addHTML('<tr id=' . $page->page_id . '>');
+			$output->addHTML('<td id="pagetitle">' . $page->page_title . '</td>');
 
 			if( !empty( $user ) ) {
-				$output->addHTML('<td id=' . $page . 'User' . '>');
+				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
 				$output->addHTML('<span>' . $user . '</span>' . " ");
 				$output->addHTML('<a href="#"><i class="fa fa-pen edit"></i></a>');
 				$output->addHTML('<a href="#" class="unlink users" style="float:right">' . '&times;' . '</a>');
@@ -124,8 +124,8 @@ class SpecialLinkLoginPages extends SpecialPage {
 					) ?: [];
 				}                
 				//User Column
-				$output->addHTML('<td id=' . $page . 'User' . '>');
-				$output->addHTML('<container id='. $page . 'Fragment>');
+				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
+				$output->addHTML('<container id='. $page->page_id . 'Fragment>');
 				$output->addHTML('<div class="dropdown">');
 				$output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
 				$output->addHTML(wfMessage("linklogin-assign-user")->text());
@@ -139,9 +139,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 				//Neuen User anlegen
 				$output->addHTML('<form class="user-create" novalidate>');
 				$output->addHTML('<label for="username">'. wfMessage("linklogin-user-create-long")->text() . '</label>');
-				$output->addHTML('<input id="' . $page .'Inputfield" class="username md-textarea form-control" rows="1">');
+				$output->addHTML('<input id="' . $page->page_id .'Inputfield" class="username md-textarea form-control" rows="1">');
 				$output->addHTML('<button type="button" class="btn btn-primary create" style="margin:5px 10px 0px 0px">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
-				$output->addHTML('<small id="' . $page . 'userError" class="userError text-danger"></small>');
+				$output->addHTML('<small id="' . $page->page_id . 'userError" class="userError text-danger"></small>');
 				$output->addHTML('</form>');
 				$output->addHTML('</td>');
 				$output->addHTML('</container>');

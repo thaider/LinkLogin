@@ -11,25 +11,29 @@ jQuery( function( $ ) {
     const page = $(this).text();
     const user = $(this).parents("tr").attr("id");
     const user_name = $(this).parents("tr").children().eq(0).children("span").html();
+    var item = $(this).attr("id");
+    item = item.split('-')[1];
+    const destination = $(this).parents("td");
     callMap(user_name, page);
-    insertPage(user,page);
+    insertPage(user,page,destination,item);
   });
 
   //Map Page to User on Special:Link Login Pages
   $('#linklogin-body').on('click', '.dropdown-item.user', function( e ) {
     e.preventDefault();
-    const page = $(this).parents("tr").attr("id");
+    const page = $(this).parents("tr").children("td").first().text();
     const user = $(this).text();
+    const destination = $(this).parents("td").attr("id");
     callMap(user, page);
-    insertUser(user, page);
+    insertUser(user, destination);
   }); 
 
   //Unlinking Users on Special:Link Login Pages
   $('#linklogin-body').on('click', '.unlink.users', (function( e ) {
     e.preventDefault();
-    const page = $(this).parents("tr").attr("id");
+    const page = $(this).parents("tr").children("td").first().text();;
     const user = $(this).siblings("span").text();
-    //$.when(callUnmap(user,page)).done(reloadFragment(page));
+    const destination = $(this).parents("tr").attr("id");
     const method = "unmap";
     $.post(mappingApiURL,
       {
@@ -38,7 +42,7 @@ jQuery( function( $ ) {
       page: page
       })
       .done(function( data, status ) {
-        reloadFragment(page);
+        reloadFragment(destination);
       });
     })); 
   
@@ -48,6 +52,8 @@ jQuery( function( $ ) {
     const user_name = $(this).parents("tr").children().eq(0).children("span").html();
     const user = $(this).parents("tr").attr("id");
     const page = $(this).siblings("span").text();
+    let item = $(this).parents("li").attr("id");
+    item = item.split('-')[1];
     const method = "unmap";
     $.post(mappingApiURL,
       {
@@ -56,11 +62,12 @@ jQuery( function( $ ) {
       page: page
       })
       .done(function( data, status ) {
-        $("#item"+page).remove();
+        $("[id=listitem-"+item+"]").remove()
+        //$("#listitem"+page).remove();
         if (!$("#"+user+"List").children('li').length){
           $("#"+user+"List").remove();
         }
-        $('.dropdown-menu.pageslist').append('<a href="#" class="dropdown-item pages ' + page + '">' + page + '</a>');
+        $('.dropdown-menu.pageslist').append('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ item +'"">' + page + '</a>');
       })
       .done(function(){
         checkDropdownVisibility();
@@ -78,16 +85,17 @@ jQuery( function( $ ) {
   //Create a new User and assign to Page and corresponding Groups
   $('#linklogin-body').on('click', '.create', function() {
     let user = $(this).siblings("input").val();
+    let page_name = $(this).parents("tr").children("td").first().text();
     let page = $(this).parents("tr").attr("id");
     validateUsername(user, page);
     if( usernameNoError ) {
       user = user.substr(0,1).toUpperCase()+user.substr(1);
-      createAccount(user, page);
+      createAccount(user, page_name, page);
     };
   }); 
    
 
-  function createAccount(user, page){
+  function createAccount(user, page_name, page){
     let url = origin + '/w' + '/api.php';
     $.get(url,
       {
@@ -122,17 +130,15 @@ jQuery( function( $ ) {
           }
         })
         .done(function(){
-          addGroupsToUser(user,page);
-          console.log("Added all Groups correlating to Page " + page + " to User " + user);
+          addGroupsToUser(user,page_name);
         })
         .done(function(){
-          callMap(user, page);
-          console.log("mapped user to page");
+          callMap(user, page_name);
         })
         .done(function(){
-          insertUser(user,page);
+          let destination = page + "User";
+          insertUser(user,destination);
           $(".dropdown-menu").append('<a href="#" class="dropdown-item user" testseite"="">' + user + '</a>');
-          console.log("updated view");
         });
       });
     };
@@ -158,54 +164,34 @@ jQuery( function( $ ) {
       method: method,
       user: user,
       page: page
-      }, function(){
-        console.log("Mapped User " + user + " to Page " + page);
-      });
+      }, function(){});
   }
 
-  function insertUser(user,page){
-    $("#"+page+"User").replaceWith('<td id="'+page+'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users" style="float:right">' + '&times;' + '</a></td>');
+  function insertUser(user, destination){
+    $("#"+destination).replaceWith('<td id="' + destination + '"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users" style="float:right">' + '&times;' + '</a></td>');
   }
 
-  function insertPage(user,page){
+  function insertPage(user,page,destination,item){
     if ( $("#"+user+"List").length ) {
-      $("#"+user+"Pages > ul").append('<li id="item' + page + '"><span>' + page + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li>');
+      $(destination).children('ul').append('<li id="listitem-' + item + '"><span>' + page + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li>');
     } else {
-      $("#"+user+"Pages").prepend('<ul id="' + user + 'List"><li id="item' + page + '"><span>' + page + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li></ul>');
+      $(destination).prepend('<ul id="' + user + 'List"><li id="listitem-'+item+'"><span>' + page + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li></ul>');
     }
-    $(".dropdown-item.pages." + page).remove();
+    $("[id=dropdownitem-"+item+"]").remove();
     checkDropdownVisibility();
   }
 
-  function reloadFragment(page){
-    let fragment = page + "User";
-    $("#"+fragment).load(location+ " #" + page + "Fragment");
-    console.log("Reloaded Fragment");
+  function reloadFragment(destination){
+    const fragment = destination + 'User';
+    $("#"+fragment).load(location + " #" + destination + "Fragment");
   }
-
-  /*
-  function callUnmap(user, page){
-    let mappingApiURL = origin + '/w' + '/api.php?action=llmapping&format=json&';
-    const method = "unmap";
-    $.post(mappingApiURL,
-    {
-    method: method,
-    user: user,
-    page: page
-    },
-    function(data, status) {
-    });
-  }
-  */
 
   function checkDropdownVisibility() {
     $('.dropdown-menu.pageslist').each(function () {
       if (!$(this).children('.dropdown-item').length) {
         $('.btn.btn-secondary.dropdown-toggle').hide();
-        console.log("Dropdowns hidden");
       } else {
         $('.btn.btn-secondary.dropdown-toggle').show();
-        console.log("Dropdowns shown");
       }
     });
   }
