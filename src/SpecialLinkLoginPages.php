@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\LinkLogin;
 
 use \MediaWiki\MediaWikiServices;
+use SMWQueryProcessor;
 use SpecialPage;
 
 class SpecialLinkLoginPages extends SpecialPage {
@@ -56,6 +57,30 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$output = $this->getOutput();
 		$groups = LinkLogin::getLinkLoginGroupsByCategory($par);
 
+		//Get Displaytitles
+		$filter = ''; 
+		$params = [
+				'[[Category:' . $par . ']]' . $filter, // die Abfragebedingungen (Query)
+				'?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
+				'format=array', // das Ausgabeformat
+				'headers=hide',
+				'link=none', // der Seitentitel würde sonst als Link (in Wiki-Markup) ausgegeben
+				'sep=<SEP>', // das Trennzeichen zwischen den Seiten
+				'propsep=<PROP>', // das Trennzeichen zwischen den Attributen
+		];
+
+		list( $query, $processed_params ) = SMWQueryProcessor::getQueryAndParamsFromFunctionParams( $params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE, false );
+		$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
+		$pages = explode( '<SEP>', $result );
+		$displaytitles = [];
+        foreach( $pages as $page ) {
+            list( $title, $displaytitle ) = explode("<PROP>", $page );
+            if( $displaytitle == '' ) {
+                    $displaytitle = $title;
+            }
+			$displaytitles[$displaytitle] = $title;
+        }
+
 		//get Pages
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -81,6 +106,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 		//get Users corresponding to pages 
 		foreach( $pages as $page ) {
+			$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
 			$dbr = $lb->getConnectionRef( DB_REPLICA );
 			$conds = [
 				'page_title' => $page->page_title
@@ -98,7 +124,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 			) ?: [];
 
 			$output->addHTML('<tr id=' . $page->page_id . '>');
-			$output->addHTML('<td id="pagetitle">' . $page->page_title . '</td>');
+			$output->addHTML('<td id="pagetitle">' . $page->displaytitle . '</td>');
 
 			if( !empty( $user ) ) {
 				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
