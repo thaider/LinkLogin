@@ -3,6 +3,7 @@
 namespace MediaWiki\Extension\LinkLogin;
 
 use \MediaWiki\MediaWikiServices;
+use SMWQueryProcessor;
 use SpecialPage;
 
 class SpecialLinkLoginUsers extends SpecialPage {
@@ -69,6 +70,30 @@ class SpecialLinkLoginUsers extends SpecialPage {
             ]
 		) ?: [];
 
+        //get Displaytitles
+        $categories = LinkLogin::getLinkLoginCategoriesByGroup($par);
+        foreach( $categories as $category ) {
+            $filter = '';
+            $params = [
+                    '[[Category:' . $category . ']]' . $filter, // die Abfragebedingungen (Query)
+                    '?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
+                    'format=array', // das Ausgabeformat
+                    'link=none', // der Seitentitel würde sonst als Link (in Wiki-Markup) ausgegeben
+                    'sep=<SEP>', // das Trennzeichen zwischen den Seiten
+                    'propsep=<PROP>', // das Trennzeichen zwischen den Attributen
+            ];
+            list( $query, $processed_params ) = SMWQueryProcessor::getQueryAndParamsFromFunctionParams( $params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE, false );
+            $result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
+            $titles = explode( '<SEP>', $result );
+            foreach( $titles as $title ) {
+                list( $title, $displaytitle ) = explode("<PROP>", $title );
+                if( $displaytitle == '' ) {
+                        $displaytitle = $title;
+                }
+                $displaytitles[$displaytitle] = $title;
+            }
+        }
+
         $linked_pages = [];
         $used_pages = [];
         foreach( $users as $user ) {
@@ -90,15 +115,15 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		) ?: [];
             if( !empty($pages) ) {
                 foreach($pages as $page){
-                    $linked_pages[$user->user_name][$page->page_id] = $page->page_title;
-                    $used_pages[] = $page->page_title;
+                    $page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
+                    $linked_pages[$user->user_name][$page->page_id] = $page->displaytitle;
+                    $used_pages[] = $page->displaytitle;
                 }
             }   
         }
         //get pages belonging to a category
         //Nach mehreren Kategorien gleichzeitig suchen?
         $unlinked_pages = [];
-        $categories = LinkLogin::getLinkLoginCategoriesByGroup($par);
         foreach( $categories as $category){
             $lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
             $dbr = $lb->getConnectionRef( DB_REPLICA );
@@ -116,9 +141,9 @@ class SpecialLinkLoginUsers extends SpecialPage {
                 ]
     		) ?: [];
             if( !empty($pages) ) {
-                $unlinked_pages = [];
                 foreach($pages as $page){
-                $unlinked_pages[$page->page_id] = $page->page_title;
+                    $page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
+                    $unlinked_pages[$page->page_id] = $page->displaytitle;
                 }
             }   
         }

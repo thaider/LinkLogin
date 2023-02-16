@@ -78,19 +78,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 		
-		//get page_id
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'page_title' => $page
-        ];
-		$page_id = $dbr->selectField(
-			'page',
-			'page_id',
-			$conds,
-            __METHOD__,
-            [],
-            []
-		) ?: [];
+		$page_id = $page;
 		
 		//insert a relation between user_id and page_id into table ll_mapping
 		if( !empty( $user_id ) && !empty( $page_id ) ) {
@@ -125,19 +113,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 		
-		//get page_id
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'page_title' => $page
-        ];
-		$page_id = $dbr->selectField(
-			'page',
-			'page_id',
-			$conds,
-            __METHOD__,
-            [],
-            []
-		) ?: [];
+		$page_id = $page;
 
 		//delete entry from ll_mapping where user_id && page_id
 		if( !empty( $user_id ) && !empty( $page_id ) ) {
@@ -174,19 +150,7 @@ class ApiLLmapping extends ApiBase {
             []
 		) ?: [];
 
-		//get page_id
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'page_title' => $page
-        ];
-		$page_id = $dbr->selectField(
-			'page',
-			'page_id',
-			$conds,
-            __METHOD__,
-            [],
-            []
-		) ?: [];
+		$page_id = $page;
 
 		//get all Categories connected to Page
 		if( !empty( $user_id ) && !empty( $page_id ) ) {

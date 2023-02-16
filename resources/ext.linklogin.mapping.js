@@ -8,32 +8,30 @@ jQuery( function( $ ) {
   //Map User to Page on Special:Link Login Users
   $('#linklogin-body').on('click', '.dropdown-item.pages', function( e ) {
     e.preventDefault();
-    const page = $(this).text();
+    const page_name = $(this).text();
     const user = $(this).parents("tr").attr("id");
     const user_name = $(this).parents("tr").children().eq(0).children("span").html();
-    var item = $(this).attr("id");
-    item = item.split('-')[1];
+    var page = $(this).attr("id");
+    page = page.split('-')[1];
     const destination = $(this).parents("td");
     callMap(user_name, page);
-    insertPage(user,page,destination,item);
+    insertPage(user, page_name, destination, page);
   });
 
   //Map Page to User on Special:Link Login Pages
   $('#linklogin-body').on('click', '.dropdown-item.user', function( e ) {
     e.preventDefault();
-    const page = $(this).parents("tr").children("td").first().text();
     const user = $(this).text();
-    const destination = $(this).parents("td").attr("id");
+    const page = $(this).parents("tr").attr("id");
     callMap(user, page);
-    insertUser(user, destination);
+    insertUser(user, page);
   }); 
 
   //Unlinking Users on Special:Link Login Pages
   $('#linklogin-body').on('click', '.unlink.users', (function( e ) {
     e.preventDefault();
-    const page = $(this).parents("tr").children("td").first().text();;
+    const page = $(this).parents("tr").attr("id");
     const user = $(this).siblings("span").text();
-    const destination = $(this).parents("tr").attr("id");
     const method = "unmap";
     $.post(mappingApiURL,
       {
@@ -42,7 +40,7 @@ jQuery( function( $ ) {
       page: page
       })
       .done(function( data, status ) {
-        reloadFragment(destination);
+        reloadFragment(page);
       });
     })); 
   
@@ -51,9 +49,9 @@ jQuery( function( $ ) {
     e.preventDefault();
     const user_name = $(this).parents("tr").children().eq(0).children("span").html();
     const user = $(this).parents("tr").attr("id");
-    const page = $(this).siblings("span").text();
-    let item = $(this).parents("li").attr("id");
-    item = item.split('-')[1];
+    const page_name = $(this).siblings("span").text();
+    let page = $(this).parents("li").attr("id");
+    page = page.split('-')[1];
     const method = "unmap";
     $.post(mappingApiURL,
       {
@@ -62,12 +60,11 @@ jQuery( function( $ ) {
       page: page
       })
       .done(function( data, status ) {
-        $("[id=listitem-"+item+"]").remove()
-        //$("#listitem"+page).remove();
+        $("[id=listitem-"+page+"]").remove()
         if (!$("#"+user+"List").children('li').length){
           $("#"+user+"List").remove();
         }
-        $('.dropdown-menu.pageslist').append('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ item +'"">' + page + '</a>');
+        $('.dropdown-menu.pageslist').append('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'"">' + page_name + '</a>');
       })
       .done(function(){
         checkDropdownVisibility();
@@ -85,17 +82,16 @@ jQuery( function( $ ) {
   //Create a new User and assign to Page and corresponding Groups
   $('#linklogin-body').on('click', '.create', function() {
     let user = $(this).siblings("input").val();
-    let page_name = $(this).parents("tr").children("td").first().text();
     let page = $(this).parents("tr").attr("id");
     validateUsername(user, page);
     if( usernameNoError ) {
       user = user.substr(0,1).toUpperCase()+user.substr(1);
-      createAccount(user, page_name, page);
+      createAccount(user, page);
     };
   }); 
    
 
-  function createAccount(user, page_name, page){
+  function createAccount(user, page){
     let url = origin + '/w' + '/api.php';
     $.get(url,
       {
@@ -130,14 +126,13 @@ jQuery( function( $ ) {
           }
         })
         .done(function(){
-          addGroupsToUser(user,page_name);
+          addGroupsToUser(user,page);
         })
         .done(function(){
-          callMap(user, page_name);
+          callMap(user, page);
         })
         .done(function(){
-          let destination = page + "User";
-          insertUser(user,destination);
+          insertUser(user,page);
           $(".dropdown-menu").append('<a href="#" class="dropdown-item user" testseite"="">' + user + '</a>');
         });
       });
@@ -167,23 +162,23 @@ jQuery( function( $ ) {
       }, function(){});
   }
 
-  function insertUser(user, destination){
-    $("#"+destination).replaceWith('<td id="' + destination + '"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users" style="float:right">' + '&times;' + '</a></td>');
+  function insertUser(user, page){
+    $("#"+page+"User").replaceWith('<td id="' + page + 'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users" style="float:right">' + '&times;' + '</a></td>');
   }
 
-  function insertPage(user,page,destination,item){
+  function insertPage(user, page_name, destination, page){
     if ( $("#"+user+"List").length ) {
-      $(destination).children('ul').append('<li id="listitem-' + item + '"><span>' + page + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li>');
+      $(destination).children('ul').append('<li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li>');
     } else {
-      $(destination).prepend('<ul id="' + user + 'List"><li id="listitem-'+item+'"><span>' + page + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li></ul>');
+      $(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li></ul>');
     }
-    $("[id=dropdownitem-"+item+"]").remove();
+    $("[id=dropdownitem-" + page + "]").remove();
     checkDropdownVisibility();
   }
 
-  function reloadFragment(destination){
-    const fragment = destination + 'User';
-    $("#"+fragment).load(location + " #" + destination + "Fragment");
+  function reloadFragment(page){
+    const fragment = page + 'User';
+    $("#"+fragment).load(location + " #" + page + "Fragment");
   }
 
   function checkDropdownVisibility() {
