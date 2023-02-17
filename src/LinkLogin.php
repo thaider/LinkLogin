@@ -18,10 +18,10 @@ class LinkLogin {
 	 */
 	public static function populateLoginTokens($par = NULL) {
 		$groups = self::getLinkLoginGroups();
-		
+
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		
+
 		$conds = [ 
 			'user_email_token_expires' => null,
 			'user_email' => '',
@@ -66,7 +66,7 @@ class LinkLogin {
 
 
 	/**
-	 * force the creation of a new login token for a specific user
+	 * Force the creation of a new login token for a specific user
 	 * 
 	 * remove email, email_confirmed and password?
 	 * set user_email_token_expires to null
@@ -91,7 +91,6 @@ class LinkLogin {
 				'user_email_token_expires' => null,
 			], __METHOD__
 		);
-
 		return $token;
 	}
 
@@ -128,7 +127,6 @@ class LinkLogin {
 				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
 			]
 		);
-
 		return $userId;
 	}
 
@@ -183,7 +181,6 @@ class LinkLogin {
 				'ORDER BY' => 'user_name'
 			]
 		) ?: [];
-		
 		return $LinkLoginUsers;
 	}
 
@@ -276,12 +273,17 @@ class LinkLogin {
 
 
 	/**
-	 * Get a list of all categories 
+	 * Get a list of all categories (for all or specified groups) 
+	 *
+	 * @param Array $filter List of groups that should be considered
 	 * 
 	 * @return Array categories
 	 */
-	public static function getLinkLoginCategories() {
+	public static function getLinkLoginCategories($filter = null) {
 		$groups = $GLOBALS['wgLinkLoginGroups'];
+		if( !is_null( $filter ) ) {
+			$groups = array_intersect_key( $groups, array_flip( $filter ) );
+		}
 		$categories = [];
 		foreach( $groups as $group ) {
 			if( isset( $group['categories'] ) ) {
@@ -295,21 +297,54 @@ class LinkLogin {
 
 
 	/**
-	 * Get a list of all categories of a certain group
-	 * 
+	 * Get a list of all categories associated to a user's group
+	 *
+	 * @param User $user
+	 *
 	 * @return Array categories
 	 */
-	public static function getLinkLoginCategoriesByGroup($group = null) {
-		$all_categories = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
-		$categories = [];
-		foreach( $all_categories as $group_name => $group_categories ) {
-			if( $group_name == $group && isset( $group_categories['categories'] ) ) {
-				foreach( $group_categories['categories'] as $group_category ) {
-					$categories[] = ucfirst( $group_category ); 
-				}
-			}
-		}
+	public static function getLinkLoginCategoriesForUser( $user ) {
+		$ugm = MediaWikiServices::getInstance()->getUserGroupManager();
+		$usergroups = $ugm->getUserGroups($user);
+		$categories = LinkLogin::getLinkLoginCategories( $usergroups );
 		return $categories;
+	}
+
+
+	/**
+	 * Get a list of all pages linked to a user
+	 *
+	 * There should be an entry in the ll_mapping_user table but the page should also be
+	 * in one of the specified categories (e.g. of the group shown or that are associated 
+	 * to one of the user's groups).
+	 *
+	 * @param String $user_id ID of the user
+	 * @param Array $categories List of categories
+	 *
+	 * @return Array of pages
+	 */
+	public static function getPagesForUser( $user_id, $categories ) {
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$conds = [
+			'll_mapping_user' => $user_id,
+			'cl_to' => $categories
+		];
+
+		$pages = $dbr->select(
+			['ll_mapping','user', 'page', 'categorylinks'],
+			['page_title','page_id'],
+			$conds,
+			__METHOD__,
+			[],
+			[
+				'user' => [ 'INNER JOIN', [ 'user_id=ll_mapping_user'] ],
+				'page' => [ 'INNER JOIN', [ 'page_id=ll_mapping_page'] ],
+				'categorylinks' => [ 'INNER JOIN', [ 'cl_from=page_id'] ]
+			]
+		) ?: [];
+
+		return $pages;
 	}
 
 
@@ -351,11 +386,11 @@ class LinkLogin {
 			]);	
 		$id = $dbw->insertId();
 		$threshold = $GLOBALS['wgLinkLoginAttemptlogThreshold'];
-		
+
 		//Check if $wgLinkLoginAttemptlogNotify is set
 		if ($GLOBALS['wgLinkLoginAttemptlogNotify']) {
 			$recipient = [new MailAddress($GLOBALS['wgLinkLoginAttemptlogNotify'])];
-			
+
 			//Check if $wgLinkLoginAttemptlogThreshold is met
 			if ($id % $threshold == 0) {
 				$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -371,7 +406,7 @@ class LinkLogin {
 				foreach ($res as $row) {
 					$attempts[] = [$row->ll_attemptlog_timestamp,$row->ll_attemptlog_notification];
 				}
-				
+
 				//Check if a Message has been sent in a set period amount of time
 				$pause = $GLOBALS['wgLinkLoginAttemptlogPause'];
 				$send = true;

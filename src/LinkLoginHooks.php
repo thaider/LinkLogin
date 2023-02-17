@@ -45,7 +45,7 @@ class LinkLoginHooks {
 				}
 			}
 
-			// should the preference only be shown to users in specific groups?
+			// should the preference only be shown if logged-in user is in specific groups?
 			foreach( $preferences as $key => $preference ) {
 				if( isset($preference['restricted']) ) {
 					$current_user = \RequestContext::getMain()->getUser();
@@ -213,7 +213,34 @@ class LinkLoginHooks {
 	public static function onParserFirstCallInit( Parser $parser ){
 		$parser->setFunctionHook( 'linklogin-recipients', [ self::class, 'renderLinkLoginRecipients' ] );
 		$parser->setFunctionHook( 'linklogin-pref', [ self::class, 'renderLinkLoginPref' ] );
+		$parser->setFunctionHook( 'linklogin-ifuser', [ self::class, 'renderIfUser' ] );
+		$parser->setFunctionHook( 'linklogin-pages', [ self::class, 'renderPages' ] );
+	}
 
+
+	/**
+	 * Allow editing for linkLoginUsers only for linked pages
+	 *
+	 * @param Title $title
+	 * @param User $user
+	 * @param String $action
+	 * @param Array $result
+	 *
+	 * @return Boolean
+	 */
+	public static function ongetUserPermissionsErrors( $title, $user, $action, &$result ) {
+		$linkLoginUser = LinkLogin::isLinkLoginUser( $user->getId() );
+		if( $linkLoginUser && $action == 'edit' ) {
+			$categories = LinkLogin::getLinkLoginCategoriesForUser( $user );
+			$pages = LinkLogin::getPagesForUser( $user->getId(), $categories );
+			foreach( $pages as $page ) {
+				if( $page->page_id == $title->getId() ) {
+					return true;
+				}
+			}
+			$result = ['linklogin-noedit'];
+			return false;
+		}
 	}
 
 
@@ -261,6 +288,42 @@ class LinkLoginHooks {
 		
 		$output = join($delimiter, $users);
 		return $output;
+	}
+
+
+	/**
+	 * Return first parameter, if user is a LinkLogin user or the second parameter if not
+	 */
+	static function renderIfUser( Parser $parser, $true, $false ) {
+		$user = \RequestContext::getMain()->getUser();
+		$linkLoginUsers = LinkLogin::isLinkLoginUser( $user->getId() );
+		
+		return $linkLoginUsers ? $true : $false;
+	}
+
+
+	/**
+	 * Return a list of all pages linked to a user
+	 *
+	 * @param String $separator Separator for the list
+	 *
+	 * @return List of pages
+	 */
+	static function renderPages( Parser $parser, $separator = ',' ) {
+		$user = \RequestContext::getMain()->getUser();
+		$categories = LinkLogin::getLinkLoginCategoriesForUser( $user );
+		if( empty( $categories ) ) {
+			return '';
+		}
+		$pages = LinkLogin::getPagesForUser( $user->getId(), $categories );
+		$title = [];
+		foreach( $pages as $page ) {
+			$titles[] = $page->page_title;
+		}
+		if( $separator == '' ) {
+			$separator = ',';
+		}
+		return join( $separator, $titles );
 	}
 
 
@@ -373,6 +436,7 @@ class LinkLoginHooks {
 		$output = join($delimiter, $users);
 		return $output;
 	}
+
 
 	/**
 	 * Load LinkLogin Modules, i.e. scripts, on every Page

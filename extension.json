@@ -31,7 +31,8 @@
 		"UserLoadAfterLoadFromSession": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onUserLoadAfterLoadFromSession",
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates",
 		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit",
-		"BeforePageDisplay": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onBeforePageDisplay"
+		"BeforePageDisplay": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onBeforePageDisplay",
+		"getUserPermissionsErrors": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::ongetUserPermissionsErrors"
 	},
 	"ResourceModules": {
 		"ext.linklogin": {

@@ -10,6 +10,8 @@ $magicWords = [];
  * @author Your Name (YourUserName)
  */
 $magicWords['en'] = [
-   'linklogin-recipients' => [ 0, 'linklogin-recipients' ],
-   'linklogin-pref' => [0, 'linklogin-pref']
+	'linklogin-recipients' => [ 0, 'linklogin-recipients' ],
+	'linklogin-pref' => [ 0, 'linklogin-pref' ],
+	'linklogin-ifuser' => [ 0, 'linklogin-ifuser' ],
+	'linklogin-pages' => [ 0, 'linklogin-pages' ],
 ];

@@ -89,6 +89,7 @@
 	"linklogin-attemptlog-hash": "Hash",
 	"linklogin-attemptlog-notify-subject": "Several unsuccessful login attempts detected",
 	"linklogin-attemptlog-notify-body": "{{fullurl:Special:LoginAttemptLog}}",
+	"linklogin-noedit": "This page is not linked to your account.",
 	"action-populateloginlinks": "populate the user table with login links",
 	"action-mailings": "create and send mailings",
 	"action-loginlogs": "inspect login logs"

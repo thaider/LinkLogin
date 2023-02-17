@@ -86,6 +86,8 @@
 	"linklogin-attemptlog-timestamp": "Datum",
 	"linklogin-attemptlog-ip": "IP",
 	"linklogin-attemptlog-hash": "Hash",
+	"linklogin-noedit": "Diese Seite ist nicht mit dem angemeldeten Benutzerkonto verknüpft.",
 	"action-populateloginlinks": "die Benutzer*innen-Tabelle mit Login-Links zu befüllen",
-	"action-mailings": "Mailings zu erstellen und zu versenden"
+	"action-mailings": "Mailings zu erstellen und zu versenden",
+	"action-loginlogs": "Login-Logs anzusehen"
 }
