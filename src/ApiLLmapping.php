@@ -7,39 +7,39 @@ use \MediaWiki\MediaWikiServices;
 
 class ApiLLmapping extends ApiBase {
 
-    public function __construct( $main, $action ) {
+	public function __construct( $main, $action ) {
 		parent::__construct( $main, $action );
 	}
 
-    public function execute() {
+	public function execute() {
 		$params = $this->extractRequestParams();
-        ApiBase::isWriteMode(true);
+		ApiBase::isWriteMode(true);
 		$method = $params['method'];
-        $user = $params['user'];
-        $page = $params['page'];
+		$user = $params['user'];
+		$page = $params['page'];
 
 		switch( $method ){
-			case "map":
-				$status = self::ll_map($user,$page);
-				break;
-			case "unmap":
-				$status = self::ll_unmap($user,$page);
-				break;
-			case "setGroup":
-				$status = self::ll_setGroup($user,$page);
-				break;
-			default:
-				return 0;
+		case "map":
+			$status = self::ll_map($user,$page);
+			break;
+		case "unmap":
+			$status = self::ll_unmap($user,$page);
+			break;
+		case "setGroup":
+			$status = self::ll_setGroup($user,$page);
+			break;
+		default:
+			return 0;
 		}
-		
+
 		$this->getResult()->addValue(
 			null,
 			"value",
 			$status
 		);
-    }
-	
-    public function getAllowedParams() {
+	}
+
+	public function getAllowedParams() {
 		return array(
 			'method' => array(
 				ApiBase::PARAM_TYPE => 'string',
@@ -53,7 +53,7 @@ class ApiLLmapping extends ApiBase {
 				ApiBase::PARAM_ISMULTI => false,
 				//limit
 			),
-            'page' => array(
+			'page' => array(
 				ApiBase::PARAM_TYPE => 'string',
 				ApiBase::PARAM_REQUIRED => true,
 				ApiBase::PARAM_ISMULTI => false,
@@ -62,24 +62,24 @@ class ApiLLmapping extends ApiBase {
 		);
 	}
 
-    public function ll_map($user, $page){
+	public function ll_map($user, $page){
 		//get user_id
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
 			'user_name' => $user
-        ];
+		];
 		$user_id = $dbr->selectField(
 			'user',
 			'user_id',
 			$conds,
-            __METHOD__,
-            [],
-            []
+			__METHOD__,
+			[],
+			[]
 		) ?: [];
-		
+
 		$page_id = $page;
-		
+
 		//insert a relation between user_id and page_id into table ll_mapping
 		if( !empty( $user_id ) && !empty( $page_id ) ) {
 			$dbw = $lb->getConnectionRef( DB_PRIMARY );
@@ -94,25 +94,25 @@ class ApiLLmapping extends ApiBase {
 		}
 
 		return 1;
-    }
+	}
 
-    public function ll_unmap($user, $page){
+	public function ll_unmap($user, $page){
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 
 		//get user_id
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
 			'user_name' => $user
-        ];
+		];
 		$user_id = $dbr->selectField(
 			'user',
 			'user_id',
 			$conds,
-            __METHOD__,
-            [],
-            []
+			__METHOD__,
+			[],
+			[]
 		) ?: [];
-		
+
 		$page_id = $page;
 
 		//delete entry from ll_mapping where user_id && page_id
@@ -131,7 +131,7 @@ class ApiLLmapping extends ApiBase {
 			return 0;
 		}
 		return 1;
-    }
+	}
 
 	public function ll_setGroup($user, $page){
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -140,14 +140,14 @@ class ApiLLmapping extends ApiBase {
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$conds = [
 			'user_name' => $user
-        ];
+		];
 		$user_id = $dbr->selectField(
 			'user',
 			'user_id',
 			$conds,
-            __METHOD__,
-            [],
-            []
+			__METHOD__,
+			[],
+			[]
 		) ?: [];
 
 		$page_id = $page;
@@ -197,7 +197,7 @@ class ApiLLmapping extends ApiBase {
 			return "empty user_id or page_id";
 		}
 		return 1;
-    }
+	}
 
 }
 ?>

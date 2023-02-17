@@ -232,7 +232,7 @@ class LinkLogin {
 	 * @return Array groups
 	 */
 	public static function getLinkLoginGroups($onlyWithCategory = false) {
-		$all_groups = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$all_groups = $GLOBALS['wgLinkLoginGroups'];
 		$groups = [];
 		foreach( $all_groups as $key => $group ) {
 			if( is_array($group) ) {
@@ -253,19 +253,11 @@ class LinkLogin {
 	 * @return Array groups
 	 */
 	public static function getLinkLoginGroupsByCategory($category = null) {
-		$all_groups = array_unique( $GLOBALS['wgLinkLoginGroups'], SORT_REGULAR );
+		$all_groups = $GLOBALS['wgLinkLoginGroups'];
 		$groups = [];
-		foreach( $all_groups as $key => $group ) {
-			if( is_array($group) ) {
-				foreach( $group as $cat_key => $categories){
-					if( is_array($categories) ) {
-						if( in_array($category, $categories) ){
-							$groups[] = $key;
-						}
-					} else if( $categories == $category){
-						$groups[] = $key;
-					}
-				}
+		foreach( $all_groups as $group => $group_def ) {
+			if( isset( $group_def['categories'] ) && in_array( $category, array_map( 'ucfirst', $group_def['categories'] ) ) ) {
+				$groups[] = $group;
 			}
 		}
 		return $groups;

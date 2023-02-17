@@ -3,7 +3,8 @@ jQuery( function( $ ) {
   let usernameNoError = true;
   let origin = window.location.origin;
   let location = window.location.href;  
-  let mappingApiURL = origin + '/w' + '/api.php?action=llmapping&format=json&';
+  let baseApiURL = mw.config.get('wgServer') + mw.config.get('wgScriptPath') + '/api.php';
+  let mappingApiURL = baseApiURL + '?action=llmapping&format=json&';
 
   //Map User to Page on Special:Link Login Users
   $('#linklogin-body').on('click', '.dropdown-item.pages', function( e ) {
@@ -75,7 +76,7 @@ jQuery( function( $ ) {
   $('#linklogin-body').on('click','.edit', (function( e ) {
     e.preventDefault();
     const user = $(this).parents().siblings("span").text();
-    const editURL = origin + '/w' + '/index.php' + '/special:edituser' + '/' + user;
+    const editURL = mw.config.get('wgServer') + mw.config.get('wgScript') + '/special:edituser' + '/' + user;
     window.open(editURL, '_blank');
   })); 
 
@@ -92,8 +93,7 @@ jQuery( function( $ ) {
    
 
   function createAccount(user, page){
-    let url = origin + '/w' + '/api.php';
-    $.get(url,
+    $.get(baseApiURL,
       {
       action: 'query',
       meta: 'authmanagerinfo|tokens',
@@ -104,7 +104,7 @@ jQuery( function( $ ) {
       function(data,status,xhr){
         var data = data.query.tokens.createaccounttoken;
         password = generateRandomPassword();
-        $.post(url, 
+        $.post(baseApiURL, 
         {
           action: 'createaccount',
           createreturnurl: origin,
@@ -139,7 +139,7 @@ jQuery( function( $ ) {
     };
 
   function addGroupsToUser(user, page){
-    let mappingApiURL = origin + '/w' + '/api.php?action=llmapping&format=json&';
+    let mappingApiURL = baseApiURL + '?action=llmapping&format=json&';
     const method = "setGroup";
     $.post(mappingApiURL,
       {
@@ -152,7 +152,7 @@ jQuery( function( $ ) {
   }
 
   function callMap(user, page){
-    let mappingApiURL = origin + '/w' + '/api.php?action=llmapping&format=json&';
+    let mappingApiURL = baseApiURL + '?action=llmapping&format=json&';
     const method = "map";
     return $.post(mappingApiURL,
       {
