@@ -204,11 +204,12 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 			//Add quick custom mail icons 
 			$output->addHTML('<td class="semorg-showedit">');
-			if( !is_null($loginpage) && !empty($email) ){
-				//$output->addHTML('<p>' . $email . '</p>');
+			if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
 				$link = $this->createCustomMailLink($loginpage,$user);
-				$encoded_link = urlencode($link);
-				$output->addWikiTextAsInterface('[mailto:' . $email .'?body=' . $encoded_link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]');
+				if( !empty($email) ){
+					$encoded_link = urlencode($link);
+					$output->addWikiTextAsInterface('[mailto:' . $email .'?body=' . $encoded_link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]');
+				}
 				$output->addHTML('<a id="' . $link . '" class="copy clipboard" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
 			}
 			$output->addHTML('</td>');
