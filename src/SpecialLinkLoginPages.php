@@ -75,7 +75,12 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$pages = explode( '<SEP>', $result );
 		$displaytitles = [];
         foreach( $pages as $page ) {
-            list( $title, $displaytitle ) = explode("<PROP>", $page );
+			if( !empty($page) ) {
+				list( $title, $displaytitle ) = explode("<PROP>", $page );
+			} else {
+				$displaytitle = '';
+				$title = '';
+			}
             if( $displaytitle == '' ) {
                     $displaytitle = $title;
             }

@@ -55,6 +55,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
 	 */
 	function showGroupDetails($par) {
 		$output = $this->getOutput();
+		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
+
+		//get loginpage if set
+		$loginpage = LinkLogin::getLoginpage($par);
 
 		//get users
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -64,7 +68,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		];
 		$users = $dbr->select(
 			['user', 'user_groups'],
-			['user_name','user_id'],
+			['user_name', 'user_id', 'user_email_token'],
 			$conds,
 			__METHOD__,
 			[],
@@ -89,7 +93,11 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
 			$titles = explode( '<SEP>', $result );
 			foreach( $titles as $title ) {
-				list( $title, $displaytitle ) = explode("<PROP>", $title );
+				if( !empty($title ) ) {
+					list( $title, $displaytitle ) = explode("<PROP>", $title );
+				} else {
+					$displaytitle = '';
+				}
 				if( $displaytitle == '' ) {
 					$displaytitle = $title;
 				}
@@ -145,7 +153,13 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		$output->addHTML('<th>' . wfMessage("linklogin-username")->text() . '</th>');
 		$output->addHTML('<th>' . wfMessage("linklogin-pages")->text() . '</th>');
+		$output->addHTML('<th class="semorg-showedit"></th>');
 		$output->addHTML('</tr>');
+
+		$preferences = array_keys( $GLOBALS['wgLinkLoginPreferences'] );
+		if( !in_array( 'email', $preferences ) ) {
+			array_unshift($preferences, 'email');
+		}
 
 		foreach( $users as $user ) {
 			$user_name = str_replace(' ', '_', $user->user_name);
@@ -176,9 +190,46 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			}
 			$output->addHTML('</div></div>');
 			$output->addHTML('</td>');
+
+			//Look if User has an e-mail assoiciated to them
+			$user_mail = \User::newFromId($user->user_id);
+			foreach( $preferences as $preference ) {
+				$user_mail->{$preference} = $uom->getOption( $user_mail, $preference );
+			}
+			if( isset($user_mail->email) ){
+				$email = $user_mail->email;
+			} else {
+				$email = "";
+			}
+
+			//Add quick custom mail icons 
+			$output->addHTML('<td class="semorg-showedit">');
+			if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
+				$link = $this->createCustomMailLink($loginpage,$user);
+				if( !empty($email) ){
+					$encoded_link = urlencode($link);
+					$output->addWikiTextAsInterface('[mailto:' . $email .'?body=' . $encoded_link . ' <i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-custom-mail')->text() . '"></i>]');
+				}
+				$output->addHTML('<a id="' . $link . '" class="copy clipboard" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
+			}
+			$output->addHTML('</td>');
 			$output->addHTML('</tr>');
 		}
 		$output->addHTML('</table>');
 		$output->addHTML('</container>');
 	}
-}
+
+	/**
+	 * Create link to send custom mail
+	 * 
+	 * @param $mailing
+	 * @param $recipient
+	 * 
+	 * @return String HTML for link
+	 */
+	function createCustomMailLink( $loginpage, $user ) {
+		$title = \Title::newFromText($loginpage);
+		$link = $title->getFullUrl([ 'login' => $user->user_email_token ]);
+		return $link;
+	}
+} 

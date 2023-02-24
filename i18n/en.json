@@ -15,6 +15,7 @@
 	"linklogin-assign-page": "Assign a Page",
 	"linklogin-assign-user": "Assign a User",
 	"linklogin-categories": "Categories",
+	"linklogin-clipboard": "Copy to clipboard",
 	"linklogin-user-create-short": "Create User",
 	"linklogin-user-create-long": "Create a new User:",
 	"linklogin-user-error-empty": "Username must not be empty!",
