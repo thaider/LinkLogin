@@ -47,6 +47,7 @@ jQuery( function( $ ) {
   
   //Unlinking Pages on Special:Link Login Users
   $('#linklogin-body').on('click', '.unlink.pages', (function( e ) {
+    $(this).find('i').tooltip('dispose');
     e.preventDefault();
     const user_name = $(this).parents("tr").children().eq(0).children("span").html();
     const user = $(this).parents("tr").attr("id");
@@ -171,14 +172,14 @@ jQuery( function( $ ) {
   }
 
   function insertUser(user, page){
-    $("#"+page+"User").replaceWith('<td id="' + page + 'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users" style="float:right">' + '&times;' + '</a></td>');
+    $("#"+page+"User").replaceWith('<td id="' + page + 'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users ml-2"><i class="fa fa-times"></i></a></td>');
   }
 
   function insertPage(user, page_name, destination, page){
     if ( $("#"+user+"List").length ) {
-      $(destination).children('ul').append('<li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li>');
+      $(destination).children('ul').append('<li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li>');
     } else {
-      $(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages" style="float:right">' + '&times;' + '</a></li></ul>');
+      $(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li></ul>');
     }
     $("[id=dropdownitem-" + page + "]").remove();
     checkDropdownVisibility();

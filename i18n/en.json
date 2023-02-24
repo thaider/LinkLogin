@@ -17,6 +17,8 @@
 	"linklogin-categories": "Categories",
 	"linklogin-clipboard": "Copy login link to clipboard",
 	"linklogin-mail-link": "Send login link via email",
+	"linklogin-edit-user": "Edit user (opens in new window)",
+	"linklogin-unlink": "Unlink",
 	"linklogin-user-create-short": "Create User",
 	"linklogin-user-create-long": "Create a new User:",
 	"linklogin-user-error-empty": "Username must not be empty!",

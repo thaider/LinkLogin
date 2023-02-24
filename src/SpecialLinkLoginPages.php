@@ -61,31 +61,31 @@ class SpecialLinkLoginPages extends SpecialPage {
 		//Get Displaytitles
 		$filter = ''; 
 		$params = [
-				'[[Category:' . $par . ']]' . $filter, // die Abfragebedingungen (Query)
-				'?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
-				'format=array', // das Ausgabeformat
-				'headers=hide',
-				'link=none', // der Seitentitel würde sonst als Link (in Wiki-Markup) ausgegeben
-				'sep=<SEP>', // das Trennzeichen zwischen den Seiten
-				'propsep=<PROP>', // das Trennzeichen zwischen den Attributen
+			'[[Category:' . $par . ']]' . $filter, // die Abfragebedingungen (Query)
+			'?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
+			'format=array', // das Ausgabeformat
+			'headers=hide',
+			'link=none', // der Seitentitel würde sonst als Link (in Wiki-Markup) ausgegeben
+			'sep=<SEP>', // das Trennzeichen zwischen den Seiten
+			'propsep=<PROP>', // das Trennzeichen zwischen den Attributen
 		];
 
 		list( $query, $processed_params ) = SMWQueryProcessor::getQueryAndParamsFromFunctionParams( $params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE, false );
 		$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
 		$pages = explode( '<SEP>', $result );
 		$displaytitles = [];
-        foreach( $pages as $page ) {
+		foreach( $pages as $page ) {
 			if( !empty($page) ) {
 				list( $title, $displaytitle ) = explode("<PROP>", $page );
 			} else {
 				$displaytitle = '';
 				$title = '';
 			}
-            if( $displaytitle == '' ) {
-                    $displaytitle = $title;
-            }
+			if( $displaytitle == '' ) {
+				$displaytitle = $title;
+			}
 			$displaytitles[$displaytitle] = $title;
-        }
+		}
 
 		//get Pages
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
@@ -136,7 +136,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
 				$output->addHTML('<span>' . $user . '</span>' . " ");
 				$output->addHTML('<a href="#"><i class="fa fa-pen edit"></i></a>');
-				$output->addHTML('<a href="#" class="unlink users" style="float:right">' . '&times;' . '</a>');
+				$output->addHTML('<a href="#" class="unlink users ml-2"><i class="fa fa-times"</i></a>');
 				$output->addHTML('</td>');
 			} else {             
 				foreach( $groups as $group ) {

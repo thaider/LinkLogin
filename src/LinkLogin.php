@@ -302,6 +302,7 @@ class LinkLogin {
 		return $categories;
 	}
 
+
 	/**
 	 * Check if a group has a loginpage defined, if yes return the pagename
 	 * 
@@ -320,6 +321,7 @@ class LinkLogin {
 		}
 		return null;
 	}
+
 
 	/**
 	 * Get a list of all pages linked to a user

@@ -13,3 +13,16 @@ div.mw-htmlform-ooui-wrapper.oo-ui-layout.oo-ui-panelLayout:first-child form[act
 a i.fa.fa-pen.edit {
     color:black;
 }
+
+#linklogin-body .fa {
+	color:#999;
+	font-size:small;
+}
+#linklogin-body .fa:hover {
+	color:#333;
+}
+#linklogin-body ul {
+	list-style-type:none;
+	padding:0;
+	margin-bottom:0;
+}

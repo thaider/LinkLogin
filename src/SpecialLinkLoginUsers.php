@@ -164,22 +164,22 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		foreach( $users as $user ) {
 			$user_name = str_replace(' ', '_', $user->user_name);
 			$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
-			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit"></i></a>' . '</td>');
+			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>' . '</td>');
 			$output->addHTML('<td id="' . $user_name . 'Pages">');
 			if( array_key_exists($user->user_name, $linked_pages)){
 				$output->addHTML('<ul id="' . $user_name . 'List">');
 				foreach( $linked_pages[$user->user_name] as $id_key => $linked_page){
 					$output->addHTML('<li id="listitem-' . $id_key . '">');
 					$output->addHTML('<span>' . $linked_page . '</span>');
-					$output->addHTML('<a href="#" class="unlink pages" style="float:right">' . '&times;' . '</a>');
+					$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
 					$output->addHTML('</li>');
 				}
 				$output->addHTML('</ul>');
 			}
 			$output->addHTML('<div class="dropdown">');
-			$output->addHTML('<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
+			$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
 			$output->addHTML(wfMessage('linklogin-assign-page')->text());
-			$output->addHTML('</button>');
+			$output->addHTML('</a>');
 			$output->addHTML('<div class="dropdown-menu pageslist" aria-labelledby="dropdownMenuButton">');
 			foreach($unlinked_pages as $key => $unlinked_page){
 

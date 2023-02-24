@@ -17,6 +17,8 @@
 	"linklogin-categories": "Kategorien",
 	"linklogin-clipboard": "Login-Link in Zwischenablage kopieren",
 	"linklogin-mail-link": "Login-Link per E-Mail verschicken",
+	"linklogin-edit-user": "User bearbeiten (öffnet in neuem Fenster)",
+	"linklogin-unlink": "Entfernen",
 	"linklogin-user-create-short": "Anlegen",
 	"linklogin-user-create-long": "Eine/n neue Benutzer*in anlegen:",
 	"linklogin-user-error-empty": "Das Namensfeld muss ausgefüllt sein!",
