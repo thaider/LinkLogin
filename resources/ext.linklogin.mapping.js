@@ -91,10 +91,6 @@ jQuery( function( $ ) {
     };
   }); 
    
-  $('#linklogin-body').on('click', '.send.mail', (function( e ) {
-    e.preventDefault();
-    })); 
-
   $('#linklogin-body').on('click', '.copy.clipboard', (function( e ) {
     e.preventDefault();
     const copyLink = $(this).attr("id");
