@@ -20,7 +20,8 @@
 	"linklogin-edit-user": "User bearbeiten (öffnet in neuem Fenster)",
 	"linklogin-unlink": "Entfernen",
 	"linklogin-user-create-short": "Anlegen",
-	"linklogin-user-create-long": "Eine/n neue Benutzer*in anlegen:",
+	"linklogin-user-create-long": "Neue*n Benutzer*in anlegen:",
+	"linklogin-user-create-placeholder": "Neue*r Benutzer*in",
 	"linklogin-user-error-empty": "Das Namensfeld muss ausgefüllt sein!",
 	"linklogin-user-error-exists": "Dieser Benutzername ist bereits in Verwendung!",
 	"linklogin-user-error-special": "Der Benutzername darf keine Sonderzeichen beinhalten (ausgenommen Leerzeichen)!",
@@ -93,5 +94,6 @@
 	"linklogin-noedit": "Diese Seite ist nicht mit dem angemeldeten Benutzerkonto verknüpft.",
 	"action-populateloginlinks": "die Benutzer*innen-Tabelle mit Login-Links zu befüllen",
 	"action-mailings": "Mailings zu erstellen und zu versenden",
-	"action-loginlogs": "Login-Logs anzusehen"
+	"action-loginlogs": "Login-Logs anzusehen",
+	"action-linklogin-link": "Benutzer*innen mit Seiten zu verknüpfen"
 }

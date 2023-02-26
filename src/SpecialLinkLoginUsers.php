@@ -8,11 +8,14 @@ use SpecialPage;
 
 class SpecialLinkLoginUsers extends SpecialPage {
 	function __construct() {
-		parent::__construct( 'LinkLoginUsers', 'loginlogs' );
+		parent::__construct( 'LinkLoginUsers', 'linklogin-link' );
 	}
 
+
 	function execute( $par ) {
+		$this->checkPermissions('linklogin-link');
 		$this->setHeaders();
+
 		LinkLogin::populateLoginTokens();
 
 		//Show Users and Pages belonging to the group set in $par
@@ -55,6 +58,8 @@ class SpecialLinkLoginUsers extends SpecialPage {
 	 */
 	function showGroupDetails($par) {
 		$output = $this->getOutput();
+		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
+
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
 
 		//get loginpage if set

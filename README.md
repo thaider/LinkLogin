@@ -161,7 +161,11 @@ Shows login attempts with invalid hashes.
 
 ### Special:LinkLogin Users
 
+Lists all users for all the LinkLogin groups and allows to link them to pages.
+
 ### Special:LinkLogin Pages
+
+Lists all the pages for all the categories associated with LinkLogin groups and allows to link them to users.
 
 
 ## Rights
@@ -178,7 +182,6 @@ create and send mailings
 
 inspect login logs
 
+### linklogin-link
 
-## Todo
-
-* there should be a possibility to reset the hash
+link pages and users

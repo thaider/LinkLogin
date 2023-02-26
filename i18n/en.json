@@ -19,8 +19,9 @@
 	"linklogin-mail-link": "Send login link via email",
 	"linklogin-edit-user": "Edit user (opens in new window)",
 	"linklogin-unlink": "Unlink",
-	"linklogin-user-create-short": "Create User",
-	"linklogin-user-create-long": "Create a new User:",
+	"linklogin-user-create-short": "Create",
+	"linklogin-user-create-long": "Create new user:",
+	"linklogin-user-create-placeholder": "New User",
 	"linklogin-user-error-empty": "Username must not be empty!",
 	"linklogin-user-error-exists": "Username already taken!",
 	"linklogin-user-error-special": "Username must not contain special characters (except spaces)!",
@@ -96,5 +97,6 @@
 	"linklogin-noedit": "This page is not linked to your account.",
 	"action-populateloginlinks": "populate the user table with login links",
 	"action-mailings": "create and send mailings",
-	"action-loginlogs": "inspect login logs"
+	"action-loginlogs": "inspect login logs",
+	"action-linklogin-link": "link users and pages"
 }

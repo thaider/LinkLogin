@@ -83,13 +83,15 @@
 	"AvailableRights": [
 		"populateloginlinks",
 		"mailings",
-		"loginlogs"
+		"loginlogs",
+		"linklogin-link"
 	],
 	"GroupPermissions": {
 		"sysop": {
 			"populateloginlinks": true,
 			"mailings": true,
-			"loginlogs": true
+			"loginlogs": true,
+			"linklogin-link": true
 		}
 	},
 	"manifest_version": 2
