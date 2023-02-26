@@ -140,7 +140,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
 				$output->addHTML('<span>' . $user . '</span>' . " ");
 				$output->addHTML('<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
-				$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
+				$output->addHTML('<a href="#" class="unlink users ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
 				$output->addHTML('</td>');
 			} else {             
 				foreach( $groups as $group ) {

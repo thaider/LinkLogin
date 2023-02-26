@@ -42,6 +42,7 @@ jQuery( function( $ ) {
 
 	//Unlinking Users on Special:Link Login Pages
 	$('#linklogin-body').on('click', '.unlink.users', (function( e ) {
+		$(this).find('i').tooltip('dispose');
 		e.preventDefault();
 		const page = $(this).parents("tr").attr("id");
 		const user = $(this).siblings("span").text();
