@@ -302,24 +302,6 @@ class LinkLogin {
 		return $categories;
 	}
 
-	/**
-	 * Check if a group has a loginpage defined, if yes return the pagename
-	 * 
-	 * @param Integer $user ID of the user to check
-	 * @param Array $groups specify link login groups to use
-	 * 
-	 * @return String loginpage | Null
-	 */
-	public static function getLoginpage($group) {
-		$groups = $GLOBALS['wgLinkLoginGroups'];
-		if( array_key_exists($group,$groups) ) {
-			if( isset($groups[$group]['loginpage']) ) {
-				$loginpage = $groups[$group]['loginpage'];
-				return $loginpage;
-			}
-		}
-		return null;
-	}
 
 	/**
 	 * Check if a group has a loginpage defined, if yes return the pagename
