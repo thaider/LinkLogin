@@ -154,6 +154,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				unset($unlinked_pages[$key]);
 			}
 		}
+		asort($unlinked_pages);
 		$output->addHTML('<container id="linklogin-body">');
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		$output->addHTML('<th>' . wfMessage("linklogin-username")->text() . '</th>');
