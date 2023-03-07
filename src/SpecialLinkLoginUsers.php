@@ -44,6 +44,9 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('<tr>');
 		foreach( $groups as $group ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $group;
+			if( wfMessage( 'group-' . $group )->exists() ) {
+				$group = wfMessage( 'group-' . $group )->text();
+			}
 			$output->addHTML('<td>' . '<a href="' . $url . '">' . $group . '</a>' . '</td>');
 			$output->addHTML('</tr>');
 		}
