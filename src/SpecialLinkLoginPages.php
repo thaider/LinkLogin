@@ -159,6 +159,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 						]
 					) ?: [];
 				}                
+				sort($users);
 				//User Column
 				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
 				$output->addHTML('<container id='. $page->page_id . 'Fragment>');

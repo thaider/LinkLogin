@@ -79,7 +79,21 @@ jQuery( function( $ ) {
 				if (!$("#"+user+"List").children('li').length){
 					$("#"+user+"List").remove();
 				}
-				$('.dropdown-menu.pageslist').append('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'"">' + page_name + '</a>');
+				//add item back to dropdown list, sorted
+				var itemList = [];
+				$('.dropdown-menu.pageslist').first().children().each(function() {
+					itemList.push($(this).text());
+				});
+				itemList.push(page_name);
+				itemList.sort();
+				index = itemList.indexOf(page_name);
+				if( index == 0 ) {
+					$('.dropdown-menu.pageslist').prepend('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'">' + page_name + '</a>');
+				} else {
+					$('.dropdown-menu.pageslist').each(function() {
+						$(this).children(".dropdown-item.pages").eq(index - 1).after('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'">' + page_name + '</a>');
+					})
+				}
 			})
 			.done(function(){
 				checkDropdownVisibility();
