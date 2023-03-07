@@ -38,12 +38,20 @@
 		"ext.linklogin": {
 			"localBasePath": "resources",
 			"remoteExtPath": "LinkLogin/resources",
-			"scripts": [
-				"ext.linklogin.mapping.js"
-			],
+			"scripts": [],
 			"styles": [
 				"ext.linklogin.css"
 			],
+			"messages": [],
+			"dependencies": []
+		},
+		"ext.linklogin-mapping": {
+			"localBasePath": "resources",
+			"remoteExtPath": "LinkLogin/resources",
+			"scripts": [
+				"ext.linklogin.mapping.js"
+			],
+			"styles": [],
 			"messages": [],
 			"dependencies": []
 		}

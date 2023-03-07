@@ -58,6 +58,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 	 */
 	function showGroupDetails($par) {
 		$output = $this->getOutput();
+		$output->addModules("ext.linklogin-mapping");
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();

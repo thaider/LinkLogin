@@ -58,6 +58,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 	 */
 	function showCategoryDetails($par) {
 		$output = $this->getOutput();
+		$output->addModules("ext.linklogin-mapping");
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 
 		$groups = LinkLogin::getLinkLoginGroupsByCategory($par);
@@ -176,7 +177,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 				//Neuen User anlegen
 				$output->addHTML('<form class="user-create form-inline" novalidate>');
 				$output->addHTML('<input id="' . $page->page_id .'Inputfield" class="username md-textarea form-control mr-1" rows="1" style="width:200px" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
-				$output->addHTML('<button type="button" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
+				$output->addHTML('<button type="submit" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
 				$output->addHTML('<small id="' . $page->page_id . 'userError" class="userError text-danger"></small>');
 				$output->addHTML('</form>');
 				$output->addHTML('</td>');
