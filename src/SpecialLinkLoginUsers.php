@@ -37,6 +37,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 	 */
 	function showOverview() {
 		$output = $this->getOutput();
+		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$groups = LinkLogin::getLinkLoginGroups(true);
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		$output->addHTML('<th>' . wfMessage('linklogin-groups')->text() . '</th>');
@@ -75,12 +76,15 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$conds = [
 			'ug_group' => $par
 		];
+		$options = [
+			'ORDER BY' => 'user_name ASC',
+		];
 		$users = $dbr->select(
 			['user', 'user_groups'],
 			['user_name', 'user_id', 'user_email_token'],
 			$conds,
 			__METHOD__,
-			[],
+			$options,
 			[
 				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
 			]

@@ -37,6 +37,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 	 */
 	function showOverview() {
 		$output = $this->getOutput();
+		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$categories = LinkLogin::getLinkLoginCategories();
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		$output->addHTML('<th>' . wfMessage("linklogin-categories")->text() . '</th>');
@@ -83,13 +84,12 @@ class SpecialLinkLoginPages extends SpecialPage {
 			if( !empty($page) ) {
 				list( $title, $displaytitle ) = explode("<PROP>", $page );
 			} else {
-				$displaytitle = '';
 				$title = '';
 			}
 			if( $displaytitle == '' ) {
 				$displaytitle = $title;
 			}
-			$displaytitles[$displaytitle] = $title;
+			$displaytitles[$title] = $displaytitle;
 		}
 
 		//get Pages
@@ -98,7 +98,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$conds = [
 			'cl_to' => $par
 		];
-		$pages = $dbr->select(
+		$titles = $dbr->select(
 			['categorylinks','page'],
 			['page_title','page_id'],
 			$conds,
@@ -109,6 +109,19 @@ class SpecialLinkLoginPages extends SpecialPage {
 			]
 		) ?: [];
 
+		$pages = [];
+		foreach( $titles as $title ) {
+			$pages[] = (object) [
+				'id' => $title->page_id,
+				'title' => $title->page_title,
+				'displaytitle' => $displaytitles[ str_replace( '_', ' ', $title->page_title )],
+			];
+		}
+
+		usort( $pages, function( $a, $b ) {
+			return strnatcasecmp( $a->displaytitle, $b->displaytitle );
+		} );
+
 		$output->addHTML('<container id="linklogin-body">');
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		$output->addHTML('<th>' . wfMessage("linklogin-page")->text() . '</th>');
@@ -117,10 +130,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 		//get Users corresponding to pages 
 		foreach( $pages as $page ) {
-			$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
 			$dbr = $lb->getConnectionRef( DB_REPLICA );
 			$conds = [
-				'page_title' => $page->page_title
+				'page_title' => $page->title
 			];
 			$user = $dbr->selectField(
 				['ll_mapping','page','user'],
@@ -134,11 +146,11 @@ class SpecialLinkLoginPages extends SpecialPage {
 				]
 			) ?: [];
 
-			$output->addHTML('<tr id=' . $page->page_id . '>');
+			$output->addHTML('<tr id=' . $page->id . '>');
 			$output->addHTML('<td id="pagetitle">' . $page->displaytitle . '</td>');
 
 			if( !empty( $user ) ) {
-				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
+				$output->addHTML('<td id=' . $page->id . 'User' . '>');
 				$output->addHTML('<span>' . $user . '</span>' . " ");
 				$output->addHTML('<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
 				$output->addHTML('<a href="#" class="unlink users ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
@@ -162,8 +174,8 @@ class SpecialLinkLoginPages extends SpecialPage {
 				}                
 				sort($users);
 				//User Column
-				$output->addHTML('<td id=' . $page->page_id . 'User' . '>');
-				$output->addHTML('<container id='. $page->page_id . 'Fragment>');
+				$output->addHTML('<td id=' . $page->id . 'User' . '>');
+				$output->addHTML('<container id='. $page->id . 'Fragment>');
 				$output->addHTML('<div class="dropdown">');
 				$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
 				$output->addHTML(wfMessage("linklogin-assign-user")->text());
@@ -176,9 +188,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 				//Neuen User anlegen
 				$output->addHTML('<form class="user-create form-inline" novalidate>');
-				$output->addHTML('<input id="' . $page->page_id .'Inputfield" class="username md-textarea form-control mr-1" rows="1" style="width:200px" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
+				$output->addHTML('<input id="' . $page->id .'Inputfield" class="username md-textarea form-control mr-1" rows="1" style="width:200px" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
 				$output->addHTML('<button type="submit" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
-				$output->addHTML('<small id="' . $page->page_id . 'userError" class="userError text-danger"></small>');
+				$output->addHTML('<small id="' . $page->id . 'userError" class="userError text-danger"></small>');
 				$output->addHTML('</form>');
 				$output->addHTML('</td>');
 				$output->addHTML('</container>');
