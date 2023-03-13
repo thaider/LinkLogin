@@ -172,8 +172,6 @@ jQuery( function( $ ) {
 								$(this).children(".dropdown-item.user").eq(index - 1).after('<a href="#" class="dropdown-item user">' + user + '</a>');
 							})
 						}
-						// Edit this Menu
-						//$(".dropdown-menu").append('<a href="#" class="dropdown-item user" testseite"="">' + user + '</a>');
 					});
 			});
 	};
