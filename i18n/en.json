@@ -14,6 +14,8 @@
 	"linklogin-pages": "Pages",
 	"linklogin-assign-page": "Assign a Page",
 	"linklogin-assign-user": "Assign a User",
+	"linklogin-associated": "Associated",
+	"linklogin-category": "Category",
 	"linklogin-categories": "Categories",
 	"linklogin-clipboard": "Copy login link to clipboard",
 	"linklogin-mail-link": "Send login link via email",

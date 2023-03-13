@@ -158,7 +158,22 @@ jQuery( function( $ ) {
 					})
 					.done(function(){
 						insertUser(user,page);
-						$(".dropdown-menu").append('<a href="#" class="dropdown-item user" testseite"="">' + user + '</a>');
+						var itemList = [];
+						$('.dropdown-menu.userlist').first().children().each(function() {
+						itemList.push($(this).text());
+						});
+						itemList.push(user);
+						itemList.sort();
+						index = itemList.indexOf(user);
+						if( index == 0 ) {
+							$('.dropdown-menu.userlist').prepend('<a href="#" class="dropdown-item user">' + user + '</a>');
+						} else {
+							$('.dropdown-menu.userlist').each(function() {
+								$(this).children(".dropdown-item.user").eq(index - 1).after('<a href="#" class="dropdown-item user">' + user + '</a>');
+							})
+						}
+						// Edit this Menu
+						//$(".dropdown-menu").append('<a href="#" class="dropdown-item user" testseite"="">' + user + '</a>');
 					});
 			});
 	};
