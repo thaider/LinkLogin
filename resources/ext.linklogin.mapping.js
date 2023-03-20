@@ -221,10 +221,10 @@ jQuery( function( $ ) {
 
 	function checkDropdownVisibility() {
 		$('.dropdown-menu.pageslist').each(function () {
-			if (!$(this).children('.dropdown-item').length) {
-				$('.btn.btn-secondary.dropdown-toggle').hide();
+			if( !$(this).children('.dropdown-item').length ) {
+				$('.dropdown-toggle.pages').hide();
 			} else {
-				$('.btn.btn-secondary.dropdown-toggle').show();
+				$('.dropdown-toggle.pages').show();
 			}
 		});
 	}
@@ -233,7 +233,7 @@ jQuery( function( $ ) {
 		let length = 8;
 		let password = "";
 		charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		for (let i = 0, n = charset.length; i < length; ++i) {
+		for( let i = 0, n = charset.length; i < length; ++i ) {
 			password += charset.charAt(Math.floor(Math.random() * n));
 		}
 		return password;
@@ -246,7 +246,7 @@ jQuery( function( $ ) {
 		//Regex looks for all special characters except spaces
 		let regex = new RegExp(/[^a-zA-Z0-9+\s]/);
 		$("#"+page+"userError").html('');
-		if (username.length == 0) {
+		if( username.length == 0 ) {
 			$("#"+page+"userError").html(messageEmpty);
 			$("#"+page+"Inputfield").addClass("is-invalid");
 			usernameNoError = false;

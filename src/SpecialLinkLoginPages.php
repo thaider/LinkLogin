@@ -72,7 +72,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$groups = LinkLogin::getLinkLoginGroupsByCategory($par);
 
 		//Get Displaytitles
-		$filter = ''; 
+		$filter = LinkLogin::getLinkLoginCategoryFilter($par);
 		$params = [
 			'[[Category:' . $par . ']]' . $filter, // die Abfragebedingungen (Query)
 			'?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
@@ -119,11 +119,14 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 		$pages = [];
 		foreach( $titles as $title ) {
-			$pages[] = (object) [
-				'id' => $title->page_id,
-				'title' => $title->page_title,
-				'displaytitle' => $displaytitles[ str_replace( '_', ' ', $title->page_title )],
-			];
+			$page_title = str_replace( '_', ' ', $title->page_title);
+			if( array_key_exists($page_title, $displaytitles)){
+				$pages[] = (object) [
+					'id' => $title->page_id,
+					'title' => $title->page_title,
+					'displaytitle' => $displaytitles[ $page_title ],
+				];
+			}
 		}
 
 		usort( $pages, function( $a, $b ) {
