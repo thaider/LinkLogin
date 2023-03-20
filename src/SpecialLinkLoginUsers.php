@@ -232,12 +232,14 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			if( array_key_exists($user->user_name, $linked_pages)){
 				$output->addHTML('<ul id="' . $user_name . 'List">');
 				foreach( $linked_pages[$user->user_name] as $id_key => $linked_page){
-					$output->addHTML('<li id="listitem-' . $id_key . '">');
-					$output->addHTML('<span>' . $linked_page . '</span>');
-					if( $api_access ) {
-						$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
+					if( in_array($linked_page, $filtered_titles) ) {
+						$output->addHTML('<li id="listitem-' . $id_key . '">');
+						$output->addHTML('<span>' . $linked_page . '</span>');
+						if( $api_access ) {
+							$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
+						}
+						$output->addHTML('</li>');
 					}
-					$output->addHTML('</li>');
 				}
 				$output->addHTML('</ul>');
 			}
