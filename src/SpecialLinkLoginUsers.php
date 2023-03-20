@@ -14,7 +14,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 	function execute( $par ) {
 		$this->setHeaders();
-
+		$this->checkPermissions('linklogin-link');
 		LinkLogin::populateLoginTokens();
 
 		//Show Users and Pages belonging to the group set in $par
