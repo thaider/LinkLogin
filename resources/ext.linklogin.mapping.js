@@ -160,7 +160,7 @@ jQuery( function( $ ) {
 						insertUser(user,page);
 						var itemList = [];
 						$('.dropdown-menu.userlist').first().children().each(function() {
-						itemList.push($(this).text());
+							itemList.push($(this).text());
 						});
 						itemList.push(user);
 						itemList.sort();

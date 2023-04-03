@@ -26,3 +26,7 @@ a i.fa.fa-pen.edit {
 	padding:0;
 	margin-bottom:0;
 }
+
+.linklogin-user-create .username {
+	width:200px;
+}

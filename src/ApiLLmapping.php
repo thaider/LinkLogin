@@ -12,6 +12,7 @@ class ApiLLmapping extends ApiBase {
 	}
 
 	public function execute() {
+		$this->checkUserRightsAny('linklogin-link');
 		$params = $this->extractRequestParams();
 		ApiBase::isWriteMode(true);
 		$method = $params['method'];
@@ -198,7 +199,5 @@ class ApiLLmapping extends ApiBase {
 		}
 		return 1;
 	}
-
 }
-?>
 

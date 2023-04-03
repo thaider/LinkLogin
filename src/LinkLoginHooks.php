@@ -449,17 +449,5 @@ class LinkLoginHooks {
 	public static function onBeforePageDisplay( OutputPage &$out, Skin &$skin ) {
 		$out->addModules( 'ext.linklogin' );
 	}
-
-	static function onApiCheckCanExecute( $module, $user, &$message ) {
-		$moduleName = $module->getModuleName();
-		if (
-			$moduleName == 'llmapping' &&
-			!in_array( 'linklogin-link', $user->getRights() )
-		) {
-			$message = 'apierror-action-notallowed';
-			return false;
-		}
-		return true;
-	}
 }
 

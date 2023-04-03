@@ -304,6 +304,18 @@ class LinkLogin {
 
 
 	/**
+	 * Check if a category has a filter defined, if yes return the filter
+	 * 
+	 * @param Array $category specify link login category to use
+	 * 
+	 * @return String filter | ''
+	 */
+	public static function getLinkLoginCategoryFilter($category) {
+		return $GLOBALS['wgLinkLoginCategories'][lcfirst($category)]['filter'] ?? $GLOBALS['wgLinkLoginCategories'][ucfirst($category)]['filter'] ?? '';
+	}
+
+
+	/**
 	 * Check if a group has a loginpage defined, if yes return the pagename
 	 * 
 	 * @param Integer $user ID of the user to check
@@ -322,26 +334,6 @@ class LinkLogin {
 		return null;
 	}
 
-	/**
-	 * Check if a category has a filter defined, if yes return the filter
-	 * 
-	 * @param Array $category specify link login category to use
-	 * 
-	 * @return String filter | ''
-	 */
-	public static function getLinkLoginCategoryFilter($category) {
-		if( isset($GLOBALS['wgLinkLoginCategories']) ) {
-			$categories = $GLOBALS['wgLinkLoginCategories'];
-			if( array_key_exists($category,$categories) ) {
-				if( isset($categories[$category]['filter']) ) {
-					$filter = $categories[$category]['filter'];
-					return $filter;
-				}
-			}
-		}
-			
-		return '';
-	}
 
 	/**
 	 * Get a list of all pages linked to a user

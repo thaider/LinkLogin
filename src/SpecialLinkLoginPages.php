@@ -62,12 +62,6 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$output = $this->getOutput();
 		$output->addModules("ext.linklogin-mapping");
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
-		$api_access = false;
-		if( MediaWikiServices::getInstance()
-			->getPermissionManager()
-			->userHasRight($this->getUser(),'linklogin-link') ) {
-				$api_access = true;
-		} 
 
 		$groups = LinkLogin::getLinkLoginGroupsByCategory($par);
 
@@ -87,8 +81,8 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
 		$pages = explode( '<SEP>', $result );
 		$displaytitles = [];
-		$displaytitle = '';
 		foreach( $pages as $page ) {
+			$displaytitle = '';
 			if( !empty($page) ) {
 				list( $title, $displaytitle ) = explode("<PROP>", $page );
 			} else {
@@ -173,10 +167,8 @@ class SpecialLinkLoginPages extends SpecialPage {
 			if( !empty( $user ) ) {
 				$output->addHTML('<td id=' . $page->id . 'User' . '>');
 				$output->addHTML('<span>' . $user . '</span>' . " ");
-				if( $api_access ) {
-					$output->addHTML('<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
-					$output->addHTML('<a href="#" class="unlink users ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
-				}
+				$output->addHTML('<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
+				$output->addHTML('<a href="#" class="unlink users ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
 				$output->addHTML('</td>');
 			} else {             
 				foreach( $groups as $group ) {
@@ -199,26 +191,20 @@ class SpecialLinkLoginPages extends SpecialPage {
 				//User Column
 				$output->addHTML('<td id=' . $page->id . 'User' . '>');
 				$output->addHTML('<container id='. $page->id . 'Fragment>');
-				if( $api_access ) {
-					$output->addHTML('<div class="dropdown">');
-					$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
-					$output->addHTML(wfMessage("linklogin-assign-user")->text());
-					$output->addHTML('</a>');
-					$output->addHTML('<div class="dropdown-menu userlist" aria-labelledby="dropdownMenuButton">');
-					foreach( $users as $user ){
-						$output->addHTML('<a href="#" class="dropdown-item user">' . $user . '</a>');
-					}
-					$output->addHTML('</div>');
+				$output->addHTML('<div class="dropdown">');
+				$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
+				$output->addHTML(wfMessage("linklogin-assign-user")->text());
+				$output->addHTML('</a>');
+				$output->addHTML('<div class="dropdown-menu userlist" aria-labelledby="dropdownMenuButton">');
+				foreach( $users as $user ){
+					$output->addHTML('<a href="#" class="dropdown-item user">' . $user . '</a>');
 				}
+				$output->addHTML('</div>');
 
-				//Neuen User anlegen, wenn User 'createaccount' Rechte besitzt
-				if( MediaWikiServices::getInstance()
-					->getPermissionManager()
-					->userHasRight($this->getUser(),
-					'createaccount') ) 
-				{
-					$output->addHTML('<form class="user-create form-inline" novalidate>');
-					$output->addHTML('<input id="' . $page->id .'Inputfield" class="username md-textarea form-control mr-1" rows="1" style="width:200px" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
+				// Show form to create new user, if user has 'createaccount' right
+				if( $this->getUser()->isAllowed( 'createaccount' ) ) {
+					$output->addHTML('<form class="linklogin-user-create user-create form-inline" novalidate>');
+					$output->addHTML('<input id="' . $page->id .'Inputfield" class="username form-control mr-1" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
 					$output->addHTML('<button type="submit" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
 					$output->addHTML('<small id="' . $page->id . 'userError" class="userError text-danger"></small>');
 					$output->addHTML('</form>');

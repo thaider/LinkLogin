@@ -32,8 +32,7 @@
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates",
 		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit",
 		"BeforePageDisplay": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onBeforePageDisplay",
-		"getUserPermissionsErrors": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::ongetUserPermissionsErrors",
-		"ApiCheckCanExecute": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onApiCheckCanExecute"
+		"getUserPermissionsErrors": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::ongetUserPermissionsErrors"
 
 	},
 	"ResourceModules": {
