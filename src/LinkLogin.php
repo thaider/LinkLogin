@@ -322,6 +322,26 @@ class LinkLogin {
 		return null;
 	}
 
+	/**
+	 * Check if a category has a filter defined, if yes return the filter
+	 * 
+	 * @param Array $category specify link login category to use
+	 * 
+	 * @return String filter | ''
+	 */
+	public static function getLinkLoginCategoryFilter($category) {
+		if( isset($GLOBALS['wgLinkLoginCategories']) ) {
+			$categories = $GLOBALS['wgLinkLoginCategories'];
+			if( array_key_exists($category,$categories) ) {
+				if( isset($categories[$category]['filter']) ) {
+					$filter = $categories[$category]['filter'];
+					return $filter;
+				}
+			}
+		}
+			
+		return '';
+	}
 
 	/**
 	 * Get a list of all pages linked to a user

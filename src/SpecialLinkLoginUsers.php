@@ -13,9 +13,8 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 
 	function execute( $par ) {
-		$this->checkPermissions('linklogin-link');
 		$this->setHeaders();
-
+		$this->checkPermissions('linklogin-link');
 		LinkLogin::populateLoginTokens();
 
 		//Show Users and Pages belonging to the group set in $par
@@ -65,6 +64,13 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addModules("ext.linklogin-mapping");
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 
+		$api_access = false;
+		if( MediaWikiServices::getInstance()
+			->getPermissionManager()
+			->userHasRight($this->getUser(), 'linklogin-link') ) {
+				$api_access = true;
+		} 
+
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
 
 		//get loginpage if set
@@ -93,9 +99,8 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		//get Displaytitles
 		$categories = LinkLogin::getLinkLoginCategories([$par]);
 		foreach( $categories as $category ) {
-			$filter = '';
 			$params = [
-				'[[Category:' . $category . ']]' . $filter, // die Abfragebedingungen (Query)
+				'[[Category:' . $category . ']]', // die Abfragebedingungen (Query)
 				'?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
 				'format=array', // das Ausgabeformat
 				'link=none', // der Seitentitel würde sonst als Link (in Wiki-Markup) ausgegeben
@@ -106,7 +111,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
 			$titles = explode( '<SEP>', $result );
 			foreach( $titles as $title ) {
-				if( !empty($title ) ) {
+				if( !empty($title) ) {
 					list( $title, $displaytitle ) = explode("<PROP>", $title );
 				} else {
 					$displaytitle = '';
@@ -115,6 +120,31 @@ class SpecialLinkLoginUsers extends SpecialPage {
 					$displaytitle = $title;
 				}
 				$displaytitles[$displaytitle] = $title;
+			}
+		
+			//Filter Pages
+			$filter = LinkLogin::getLinkLoginCategoryFilter($category);
+			$params = [
+				'[[Category:' . $category . ']]' . $filter, // die Abfragebedingungen (Query)
+				'?Display title of=', // ein zusätzliches Attribut, das ausser dem Seitentitel ausgegeben werden soll
+				'format=array', // das Ausgabeformat
+				'link=none', // der Seitentitel würde sonst als Link (in Wiki-Markup) ausgegeben
+				'sep=<SEP>', // das Trennzeichen zwischen den Seiten
+				'propsep=<PROP>', // das Trennzeichen zwischen den Attributen
+			];
+			list( $query, $processed_params ) = SMWQueryProcessor::getQueryAndParamsFromFunctionParams( $params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE, false );
+			$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
+			$filtered = explode( '<SEP>', $result );
+			foreach( $filtered as $filtered_title ) {
+				if( !empty($filtered_title) ) {
+					list( $title, $displaytitle ) = explode("<PROP>", $filtered_title );
+				} 
+				if( $displaytitle == '') {
+					$displaytitle = $title;
+				}
+				if( $displaytitle != '') {
+					$filtered_titles[] = $displaytitle;
+				}
 			}
 		}
 
@@ -151,7 +181,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			]
 		) ?: [];
 		if( !empty($pages) ) {
-			foreach($pages as $page){
+			foreach( $pages as $page ) {
 				$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
 				$unlinked_pages[$page->page_id] = $page->displaytitle;
 			}
@@ -163,6 +193,21 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			}
 		}
 		natcasesort($unlinked_pages);
+
+		$assoc_categories = LinkLogin::getLinkLoginCategories([$par]);
+
+		if( wfMessage( 'group-' . $par )->exists() ) {
+			$par = wfMessage( 'group-' . $par )->text();
+		}
+		$output->setPageTitle( $this->getDescription() . ' (' . wfMessage('linklogin-group') . ': '  . $par . ')');
+
+		$output->addHTML('<div class="col text-center"><a href="' . SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '"><button type="button" class="btn btn-secondary translate-middle">' . wfMessage('linklogin-overview') . '</button></a></div>');
+		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-associated") . ' ' . wfMessage("linklogin-categories"). ': ');
+		foreach($assoc_categories as $assoc_cat){
+			$url = SpecialPage::getTitleFor( 'LinkLoginPages' )->getLocalURL() . '/' . $assoc_cat;
+			$output->addHTML('<a href="' . $url . '">' . $assoc_cat . '</a>' . ' ');
+		}
+		$output->addHTML('</div>');
 		$output->addHTML('<container id="linklogin-body">');
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		$output->addHTML('<th>' . wfMessage("linklogin-username")->text() . '</th>');
@@ -178,31 +223,43 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		foreach( $users as $user ) {
 			$user_name = str_replace(' ', '_', $user->user_name);
 			$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
-			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>' . '</td>');
+			if( $api_access ) {
+				$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>' . '</td>');
+			} else {
+				$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . '</td>');
+			}
 			$output->addHTML('<td id="' . $user_name . 'Pages">');
 			if( array_key_exists($user->user_name, $linked_pages)){
 				$output->addHTML('<ul id="' . $user_name . 'List">');
 				foreach( $linked_pages[$user->user_name] as $id_key => $linked_page){
-					$output->addHTML('<li id="listitem-' . $id_key . '">');
-					$output->addHTML('<span>' . $linked_page . '</span>');
-					$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
-					$output->addHTML('</li>');
+					if( in_array($linked_page, $filtered_titles) ) {
+						$output->addHTML('<li id="listitem-' . $id_key . '">');
+						$output->addHTML('<span>' . $linked_page . '</span>');
+						if( $api_access ) {
+							$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
+						}
+						$output->addHTML('</li>');
+					}
 				}
 				$output->addHTML('</ul>');
 			}
-			$output->addHTML('<div class="dropdown">');
-			$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
-			$output->addHTML(wfMessage('linklogin-assign-page')->text());
-			$output->addHTML('</a>');
-			$output->addHTML('<div class="dropdown-menu pageslist" aria-labelledby="dropdownMenuButton">');
-			foreach($unlinked_pages as $key => $unlinked_page){
-
-				// show only pages not already associated with the user
-				if(!in_array($unlinked_page,$linked_pages)){
-					$output->addHTML('<a href="#" class="dropdown-item pages" id="dropdownitem-'. $key .'">' . $unlinked_page . '</a>');
+			if( $api_access ) {
+				$output->addHTML('<div class="dropdown">');
+				$output->addHTML('<a class="dropdown-toggle pages" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
+				$output->addHTML(wfMessage('linklogin-assign-page')->text());
+				$output->addHTML('</a>');
+				$output->addHTML('<div class="dropdown-menu pageslist" aria-labelledby="dropdownMenuButton">');
+				foreach($unlinked_pages as $key => $unlinked_page){
+					// show only pages not already associated with the user
+					if(!in_array($unlinked_page,$linked_pages)){
+						//show only filtered pages
+						if( in_array($unlinked_page, $filtered_titles) ) {
+							$output->addHTML('<a href="#" class="dropdown-item pages" id="dropdownitem-'. $key .'">' . $unlinked_page . '</a>');
+						}
+					}
 				}
+				$output->addHTML('</div></div>');
 			}
-			$output->addHTML('</div></div>');
 			$output->addHTML('</td>');
 
 			//Look if User has an e-mail assoiciated to them
@@ -218,12 +275,14 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 			//Add quick custom mail icons 
 			$output->addHTML('<td class="semorg-showedit">');
-			if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
-				$link = $this->createCustomMailLink($loginpage,$user);
-				$output->addHTML('<a id="' . $link . '" class="copy clipboard mr-2" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
-				if( !empty($email) ){
-					$encoded_link = urlencode($link);
-					$output->addHTML('<a href="mailto:' . $email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
+			if( $api_access ){
+				if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
+					$link = $this->createCustomMailLink($loginpage,$user);
+					$output->addHTML('<a id="' . $link . '" class="copy clipboard mr-2" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
+					if( !empty($email) ){
+						$encoded_link = urlencode($link);
+						$output->addHTML('<a href="mailto:' . $email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
+					}
 				}
 			}
 			$output->addHTML('</td>');
