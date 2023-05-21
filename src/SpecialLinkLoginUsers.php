@@ -213,10 +213,50 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			array_unshift($preferences, 'email');
 		}
 
+		//get all user_property values
+		$user_ids = [];
+		foreach( $users as $user ) {
+			$user_ids[] = $user->user_id;
+		}
+		$user_properties = [];
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$user_properties_query = $dbr->newSelectQueryBuilder()
+			->select( [
+				'up_user',
+				'up_property',
+				'up_value'
+			])
+			->from( 'user_properties' )
+			->where(' up_user IN (' . implode(',', $user_ids) . ') ')
+			->caller( __METHOD__ )
+			->fetchResultSet();
+		
+		$user_properties = [];
+
+		foreach($user_properties_query as $user_property) {
+			if( $user_property->up_property != "VectorSkinVersion" ) {
+				$user_properties[$user_property->up_user]['property'][] = $user_property->up_property;
+				$user_properties[$user_property->up_user]['property_value'][] = $user_property->up_value;
+			}
+		}
 		foreach( $users as $user ) {
 			$user_name = str_replace(' ', '_', $user->user_name);
 			$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
-			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>' . '</td>');
+			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
+			$output->addHTML('<div class="linklogin-user-properties">');
+			if( !isset($user_properties[$user->user_id]) ) {
+				$user_properties[$user->user_id]['property'][] = "email";
+				$user_properties[$user->user_id]['property_value'][] = "";
+			}
+			foreach($user_properties[$user->user_id]['property'] as $key => $user_property) {
+				$output->addHTML('<div class="linklogin-user-property">');
+				$output->addHTML('<span class="linklogin-user-property-name">' . wfMessage('linklogin-pref-' . $user_property)->text() . ': ' . '</span>');
+				$output->addHTML('<span class="linklogin-user-property-value">' . $user_properties[$user->user_id]["property_value"][$key] . '</span>');
+				$output->addHTML('</div>');
+			}
+			$output->addHTML('</div>');
+			$output->addHTML('</td>');
 			$output->addHTML('<td id="' . $user_name . 'Pages">');
 			if( array_key_exists($user->user_name, $linked_pages)){
 				$output->addHTML('<ul id="' . $user_name . 'List">');
