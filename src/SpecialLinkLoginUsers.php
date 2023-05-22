@@ -72,22 +72,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		//get users
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'ug_group' => $par
-		];
-		$options = [
-			'ORDER BY' => 'user_name ASC',
-		];
-		$users = $dbr->select(
-			['user', 'user_groups'],
-			['user_name', 'user_id', 'user_email_token'],
-			$conds,
-			__METHOD__,
-			$options,
-			[
-				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
-			]
-		) ?: [];
+		$users = $dbr->newSelectQueryBuilder()
+			->select( ['user_name', 'user_id', 'user_email_token'] )
+			->from( 'user' )
+			->join( 'user_groups', null, 'user_id=ug_user' )
+			->where( ['ug_group' => $par] )
+			->orderBy('user_name', 'ASC')
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
+		
+
 
 		//get display titles
 		$categories = LinkLogin::getLinkLoginCategories([$par]);
@@ -158,21 +152,15 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		//get all pages belonging to the group's categories
 		$unlinked_pages = [];
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'cl_to' => $categories
-		];
-		$pages = $dbr->select(
-			['categorylinks','page'],
-			['page_title','page_id'],
-			$conds,
-			__METHOD__,
-			[],
-			[
-				'categorylinks' => [ 'INNER JOIN', [ 'cl_from=page_id'] ]
-			]
-		) ?: [];
+		$pages = $dbr->newSelectQueryBuilder()
+			->select( ['page_title', 'page_id'] )
+			->from( 'categorylinks' )
+			->join( 'page', null, 'cl_from=page_id' )
+			->where( ['cl_to' => $categories] )
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
+
 		if( !empty($pages) ) {
 			foreach( $pages as $page ) {
 				$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
@@ -233,7 +221,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			->fetchResultSet();
 		
 		$user_properties = [];
-
+		
 		foreach($user_properties_query as $user_property) {
 			if( $user_property->up_property != "VectorSkinVersion" ) {
 				$user_properties[$user_property->up_user]['property'][] = $user_property->up_property;
@@ -251,7 +239,11 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			}
 			foreach($user_properties[$user->user_id]['property'] as $key => $user_property) {
 				$output->addHTML('<div class="linklogin-user-property">');
-				$output->addHTML('<span class="linklogin-user-property-name">' . wfMessage('linklogin-pref-' . $user_property)->text() . ': ' . '</span>');
+				if( wfMessage('linklogin-pref-' . $user_property)->text() != '⧼linklogin-pref-' . $user_property . '⧽') {
+					$output->addHTML('<span class="linklogin-user-property-name">' . wfMessage('linklogin-pref-' . $user_property)->text() . ': ' . '</span>');
+				} else {
+					$output->addHTML('<span class="linklogin-user-property-name">' . ucfirst($user_property) . ': ' . '</span>');
+				}
 				$output->addHTML('<span class="linklogin-user-property-value">' . $user_properties[$user->user_id]["property_value"][$key] . '</span>');
 				$output->addHTML('</div>');
 			}
