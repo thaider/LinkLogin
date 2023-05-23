@@ -216,35 +216,33 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				'up_value'
 			])
 			->from( 'user_properties' )
+			->where(' up_property IN (' . implode(', ', array_map(function($val){return sprintf("'%s'", $val);}, $preferences)) . ') ')
 			->where(' up_user IN (' . implode(',', $user_ids) . ') ')
 			->caller( __METHOD__ )
 			->fetchResultSet();
 		
 		$user_properties = [];
 		
-		foreach($user_properties_query as $user_property) {
-			if( $user_property->up_property != "VectorSkinVersion" ) {
-				$user_properties[$user_property->up_user]['property'][] = $user_property->up_property;
-				$user_properties[$user_property->up_user]['property_value'][] = $user_property->up_value;
-			}
+		foreach( $user_properties_query as $user_property ) {
+			$user_properties[$user_property->up_user][$user_property->up_property] = $user_property->up_value;
 		}
+
 		foreach( $users as $user ) {
 			$user_name = str_replace(' ', '_', $user->user_name);
 			$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
 			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
 			$output->addHTML('<div class="linklogin-user-properties">');
-			if( !isset($user_properties[$user->user_id]) ) {
-				$user_properties[$user->user_id]['property'][] = "email";
-				$user_properties[$user->user_id]['property_value'][] = "";
+			if( !isset( $uers_properties[$user->user_id] ) ) {
+				$user_properties[$user->user_id]['email'] = "";
 			}
-			foreach($user_properties[$user->user_id]['property'] as $key => $user_property) {
+			foreach($user_properties[$user->user_id] as $user_property => $property_value) {
 				$output->addHTML('<div class="linklogin-user-property">');
-				if( wfMessage('linklogin-pref-' . $user_property)->text() != '⧼linklogin-pref-' . $user_property . '⧽') {
+				if( wfMessage('linklogin-pref-' . $user_property)->exists() ) {
 					$output->addHTML('<span class="linklogin-user-property-name">' . wfMessage('linklogin-pref-' . $user_property)->text() . ': ' . '</span>');
 				} else {
 					$output->addHTML('<span class="linklogin-user-property-name">' . ucfirst($user_property) . ': ' . '</span>');
 				}
-				$output->addHTML('<span class="linklogin-user-property-value">' . $user_properties[$user->user_id]["property_value"][$key] . '</span>');
+				$output->addHTML('<span class="linklogin-user-property-value">' . $property_value . '</span>');
 				$output->addHTML('</div>');
 			}
 			$output->addHTML('</div>');

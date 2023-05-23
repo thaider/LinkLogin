@@ -185,7 +185,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 				$output->addHTML('</div>');
 
 				// Show form to create new user, if user has 'createaccount' right
-				if( MediaWikiServices::getInstance()->getPermissionManager()->userHasRight( $this->getUser() ,'createaccount') ) {
+				if( $this->getUser()->isAllowed( 'createaccount' ) ) {
 					$output->addHTML('<form class="linklogin-user-create user-create form-inline" novalidate>');
 					$output->addHTML('<input id="' . $page->id .'Inputfield" class="username form-control mr-1" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
 					$output->addHTML('<button type="submit" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
