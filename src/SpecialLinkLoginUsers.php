@@ -196,9 +196,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('<th class="semorg-showedit"></th>');
 		$output->addHTML('</tr>');
 
+		//get all preferences set in $wgLinkLoginPreferences
 		$preferences = array_keys( $GLOBALS['wgLinkLoginPreferences'] );
-		if( !in_array( 'email', $preferences ) ) {
-			array_unshift($preferences, 'email');
+		if( empty($preferences) ) {
+			$preferences = ['email'];
 		}
 
 		//get all user_property values
@@ -223,17 +224,26 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		
 		$user_properties = [];
 		
-		foreach( $user_properties_query as $user_property ) {
-			$user_properties[$user_property->up_user][$user_property->up_property] = $user_property->up_value;
+		//add user_properties to array in the order of preferences
+		foreach( $preferences as $preference ) {
+			foreach( $user_properties_query as $user_property ) {
+				if( $preference == $user_property->up_property ) {
+					$user_properties[$user_property->up_user][$user_property->up_property] = $user_property->up_value;
+				}
+			}
 		}
 
 		foreach( $users as $user ) {
+			//Look if User has an e-mail assoiciated to them
+			$user_mail = \User::newFromId($user->user_id);
+			$user->email = $uom->getOption( $user_mail, 'email');
+
 			$user_name = str_replace(' ', '_', $user->user_name);
 			$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
 			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
 			$output->addHTML('<div class="linklogin-user-properties">');
-			if( !isset( $uers_properties[$user->user_id] ) ) {
-				$user_properties[$user->user_id]['email'] = "";
+			if( !isset( $user_properties[$user->user_id] ) ) {
+				$user_properties[$user->user_id]['email'] = $user->email;
 			}
 			foreach($user_properties[$user->user_id] as $user_property => $property_value) {
 				$output->addHTML('<div class="linklogin-user-property">');
@@ -277,25 +287,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$output->addHTML('</div></div>');
 			$output->addHTML('</td>');
 
-			//Look if User has an e-mail assoiciated to them
-			$user_mail = \User::newFromId($user->user_id);
-			foreach( $preferences as $preference ) {
-				$user_mail->{$preference} = $uom->getOption( $user_mail, $preference );
-			}
-			if( isset($user_mail->email) ){
-				$email = $user_mail->email;
-			} else {
-				$email = "";
-			}
+
 
 			//Add quick custom mail icons 
 			$output->addHTML('<td class="semorg-showedit">');
 			if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
 				$link = $this->createCustomMailLink($loginpage,$user);
 				$output->addHTML('<a id="' . $link . '" class="copy clipboard mr-2" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
-				if( !empty($email) ){
+				if( !empty($user->email) ){
 					$encoded_link = urlencode($link);
-					$output->addHTML('<a href="mailto:' . $email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
+					$output->addHTML('<a href="mailto:' . $user->email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
 				}
 			}
 			$output->addHTML('</td>');
