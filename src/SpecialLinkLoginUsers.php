@@ -146,14 +146,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			if( !empty($pages) ) {
 				foreach($pages as $page){
 					$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
-					$linked_pages[$user->user_name][$page->page_id] = $page->displaytitle;
+					$linked_pages[$user->user_name][$page->page_id]['title'] = $page->page_title;
+					$linked_pages[$user->user_name][$page->page_id]['displaytitle'] = $page->displaytitle;
 					$used_pages[] = $page->displaytitle;
 				}
 			}   
 		}
 
 		//get all pages belonging to the group's categories
-		$unlinked_pages = [];
+		$unsorted_unlinked_pages = [];
+		$original_titles = [];
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$pages = $dbr->newSelectQueryBuilder()
 			->select( ['page_title', 'page_id'] )
@@ -168,16 +170,23 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		if( !empty($pages) ) {
 			foreach( $pages as $page ) {
 				$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
-				$unlinked_pages[$page->page_id] = $page->displaytitle;
+				$original_titles[$page->page_title ] = $page->displaytitle;
+				$unsorted_unlinked_pages[$page->page_id]= $page->displaytitle;
 			}
 		}   
 
-		foreach( $unlinked_pages as $key => $unlinked_page ) {
-			if( in_array($unlinked_page,$used_pages) ) {
-				unset($unlinked_pages[$key]);
+		foreach( $unsorted_unlinked_pages as $key => $unsorted_unlinked_page ) {
+			if( in_array($unsorted_unlinked_page,$used_pages) ) {
+				unset($unsorted_unlinked_pages[$key]);
 			}
 		}
-		natcasesort($unlinked_pages);
+		natcasesort($unsorted_unlinked_pages);
+
+		$unlinked_pages = [];
+		foreach($unsorted_unlinked_pages as $key => $unlinked_page) {
+			$unlinked_pages[$key]['displaytitle'] = $unlinked_page;
+			$unlinked_pages[$key]['title'] = array_search( $unlinked_page, $original_titles );
+		}
 
 		$assoc_categories = LinkLogin::getLinkLoginCategories([$par]);
 
@@ -268,9 +277,9 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			if( array_key_exists($user->user_name, $linked_pages)){
 				$output->addHTML('<ul id="' . $user_name . 'List">');
 				foreach( $linked_pages[$user->user_name] as $id_key => $linked_page){
-					if( in_array($linked_page, $filtered_titles) ) {
+					if( in_array($linked_page['displaytitle'], $filtered_titles) ) {
 						$output->addHTML('<li id="listitem-' . $id_key . '">');
-						$output->addHTML('<span>' . $linked_page . '</span>');
+						$output->addHTML('<span data-title="' . $linked_page['title'] . '"><a href="../' . htmlspecialchars($linked_page['title']) . '" target="_blank">' . $linked_page['displaytitle'] . '</a></span>');
 						$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
 						$output->addHTML('</li>');
 					}
@@ -284,10 +293,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$output->addHTML('<div class="dropdown-menu pageslist" aria-labelledby="dropdownMenuButton">');
 			foreach($unlinked_pages as $key => $unlinked_page){
 				// show only pages not already associated with the user
-				if(!in_array($unlinked_page,$linked_pages)){
+				if(!in_array($unlinked_page['displaytitle'],$linked_pages)){
 					//show only filtered pages
-					if( in_array($unlinked_page, $filtered_titles) ) {
-						$output->addHTML('<a href="#" class="dropdown-item pages" id="dropdownitem-'. $key .'">' . $unlinked_page . '</a>');
+					if( in_array($unlinked_page['displaytitle'], $filtered_titles) ) {
+						$output->addHTML('<a href="#" class="dropdown-item pages" id="dropdownitem-'. $key .'" data-title="' . $unlinked_page['title'] . '">' . $unlinked_page['displaytitle'] . '</a>');
 					}
 				}
 			}
