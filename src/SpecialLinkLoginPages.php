@@ -154,7 +154,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 				->fetchField() ?: [];
 			
 			$output->addHTML('<tr id=' . $page->id . '>');
-			$output->addHTML('<td id="pagetitle">' . $page->displaytitle . '</td>');
+			$output->addHTML('<td id="pagetitle"><a href="../' . htmlspecialchars($page->title) . '" target="_blank">' . $page->displaytitle . '</a></td>');
 
 			if( !empty( $user ) ) {
 				$output->addHTML('<td id=' . $page->id . 'User' . '>');

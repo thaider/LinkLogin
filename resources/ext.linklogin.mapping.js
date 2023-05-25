@@ -18,20 +18,21 @@ jQuery( function( $ ) {
 		};
 	});
 
-	//Map User to Page on Special:Link Login Users
+	//Map Page to User on Special:Link Login Users
 	$('#linklogin-body').on('click', '.dropdown-item.pages', function( e ) {
 		e.preventDefault();
 		const page_name = $(this).text();
+		const page_title = escapeHtml($(this).attr("data-title"));
 		const user = $(this).parents("tr").attr("id");
 		const user_name = $(this).parents("tr").children().eq(0).children("span").html();
 		var page = $(this).attr("id");
 		page = page.split('-')[1];
 		const destination = $(this).parents("td");
 		callMap(user_name, page);
-		insertPage(user, page_name, destination, page);
+		insertPage(user, page_name, destination, page, page_title);
 	});
 
-	//Map Page to User on Special:Link Login Pages
+	//Map User to Page on Special:Link Login Pages
 	$('#linklogin-body').on('click', '.dropdown-item.user', function( e ) {
 		e.preventDefault();
 		const user = $(this).text();
@@ -65,6 +66,7 @@ jQuery( function( $ ) {
 		const user_name = $(this).parents("tr").children().eq(0).children("span").html();
 		const user = $(this).parents("tr").attr("id");
 		const page_name = $(this).siblings("span").text();
+		const page_title = escapeHtml($(this).siblings("span").attr("data-title"));
 		let page = $(this).parents("li").attr("id");
 		page = page.split('-')[1];
 		const method = "unmap";
@@ -88,10 +90,10 @@ jQuery( function( $ ) {
 				itemList.sort();
 				index = itemList.indexOf(page_name);
 				if( index == 0 ) {
-					$('.dropdown-menu.pageslist').prepend('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'">' + page_name + '</a>');
+					$('.dropdown-menu.pageslist').prepend('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'" data-title="' + page_title + '">' + page_name + '</a>');
 				} else {
 					$('.dropdown-menu.pageslist').each(function() {
-						$(this).children(".dropdown-item.pages").eq(index - 1).after('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'">' + page_name + '</a>');
+						$(this).children(".dropdown-item.pages").eq(index - 1).after('<a href="#" class="dropdown-item pages" id="dropdownitem-'+ page +'" data-title="' + page_title + '">' + page_name + '</a>');
 					})
 				}
 			})
@@ -204,11 +206,11 @@ jQuery( function( $ ) {
 		$("#"+page+"User").replaceWith('<td id="' + page + 'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users ml-2"><i class="fa fa-times"></i></a></td>');
 	}
 
-	function insertPage(user, page_name, destination, page){
+	function insertPage(user, page_name, destination, page, page_title){
 		if ( $("#"+user+"List").length ) {
-			$(destination).children('ul').append('<li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li>');
+			$(destination).children('ul').append('<li id="listitem-' + page + '"><span data-title="' + page_title + '"><a href="../' + page_title + '" target="_blank">' + page_name + '</a></span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li>');
 		} else {
-			$(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span>' + page_name + '</span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li></ul>');
+			$(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span data-title="' + page_title + '"><a href="../' + page_title + '" target="_blank">' + page_name + '</a></span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li></ul>');
 		}
 		$("[id=dropdownitem-" + page + "]").remove();
 		checkDropdownVisibility();
@@ -261,5 +263,17 @@ jQuery( function( $ ) {
 				usernameNoError = true;
 			}
 		}
+	}
+
+	function escapeHtml(text) {
+		var map = {
+		  '&': '&amp;',
+		  '<': '&lt;',
+		  '>': '&gt;',
+		  '"': '&quot;',
+		  "'": '&#039;'
+		};
+		
+		return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 	}
 });
