@@ -101,7 +101,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 			->select( ['page_title', 'page_id'] )
 			->from( 'categorylinks' )
 			->join( 'page', null, 'cl_from=page_id' )
-			->where( ['cl_to' => $par] )
+			->where( [
+				'cl_to' => $par
+			] )
 			->caller( __METHOD__ )
 			->fetchResultSet() ?: [];
 
@@ -145,7 +147,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 				->from( 'page' )
 				->join( 'll_mapping', null, 'll_mapping_page=page_id')
 				->join( 'user', null, 'll_mapping_user=user_id' )
-				->where( ['page_title' => $page->title] )
+				->where( [
+					'page_title' => $page->title
+				] )
 				->caller( __METHOD__ )
 				->fetchField() ?: [];
 			
@@ -165,7 +169,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 						->select( ['user_name'] )
 						->from( 'user_groups' )
 						->join( 'user', null, 'user_id=ug_user' )
-						->where( ['ug_group' => $group] )
+						->where( [
+							'ug_group' => $group
+						] )
 						->caller( __METHOD__ )
 						->fetchFieldValues() ?: [];
 

@@ -76,7 +76,9 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			->select( ['user_name', 'user_id', 'user_email_token'] )
 			->from( 'user' )
 			->join( 'user_groups', null, 'user_id=ug_user' )
-			->where( ['ug_group' => $par] )
+			->where( [
+				'ug_group' => $par
+			] )
 			->orderBy('user_name', 'ASC')
 			->caller( __METHOD__ )
 			->fetchResultSet() ?: [];
@@ -157,7 +159,9 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			->select( ['page_title', 'page_id'] )
 			->from( 'categorylinks' )
 			->join( 'page', null, 'cl_from=page_id' )
-			->where( ['cl_to' => $categories] )
+			->where( [
+				'cl_to' => $categories
+			] )
 			->caller( __METHOD__ )
 			->fetchResultSet() ?: [];
 
@@ -198,8 +202,8 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		//get all preferences set in $wgLinkLoginPreferences
 		$preferences = array_keys( $GLOBALS['wgLinkLoginPreferences'] );
-		if( empty($preferences) ) {
-			$preferences = ['email'];
+		if( !in_array( 'email', $preferences ) ) {
+			array_unshift( $preferences, 'email' );
 		}
 
 		//get all user_property values
@@ -208,7 +212,6 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$user_ids[] = $user->user_id;
 		}
 		$user_properties = [];
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$user_properties_query = $dbr->newSelectQueryBuilder()
 			->select( [
@@ -217,8 +220,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				'up_value'
 			])
 			->from( 'user_properties' )
-			->where(' up_property IN (' . implode(', ', array_map(function($val){return sprintf("'%s'", $val);}, $preferences)) . ') ')
-			->where(' up_user IN (' . implode(',', $user_ids) . ') ')
+			->where(
+				[ 'up_property' => $preferences ],
+				[ 'up_user' => $user_ids ],
+			)
 			->caller( __METHOD__ )
 			->fetchResultSet();
 		
@@ -234,7 +239,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		}
 
 		foreach( $users as $user ) {
-			//Look if User has an e-mail assoiciated to them
+			//Check if user has an e-mail associated to them
 			$user_mail = \User::newFromId($user->user_id);
 			$user->email = $uom->getOption( $user_mail, 'email');
 
@@ -246,14 +251,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				$user_properties[$user->user_id]['email'] = $user->email;
 			}
 			foreach($user_properties[$user->user_id] as $user_property => $property_value) {
-				$output->addHTML('<div class="linklogin-user-property">');
-				if( wfMessage('linklogin-pref-' . $user_property)->exists() ) {
-					$output->addHTML('<span class="linklogin-user-property-name">' . wfMessage('linklogin-pref-' . $user_property)->text() . ': ' . '</span>');
-				} else {
-					$output->addHTML('<span class="linklogin-user-property-name">' . ucfirst($user_property) . ': ' . '</span>');
+				if( !empty( $property_value ) ) {
+					$output->addHTML('<div class="linklogin-user-property">');
+					$property_name = ucfirst( $user_property );
+					if( wfMessage('linklogin-pref-' . $user_property)->exists() ) {
+						$property_name = wfMessage('linklogin-pref-' . $user_property)->text();
+					}
+					$output->addHTML('<span class="linklogin-user-property-name">' . $property_name . ': ' . '</span>');
+					$output->addHTML('<span class="linklogin-user-property-value">' . $property_value . '</span>');
+					$output->addHTML('</div>');
 				}
-				$output->addHTML('<span class="linklogin-user-property-value">' . $property_value . '</span>');
-				$output->addHTML('</div>');
 			}
 			$output->addHTML('</div>');
 			$output->addHTML('</td>');
@@ -286,8 +293,6 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			}
 			$output->addHTML('</div></div>');
 			$output->addHTML('</td>');
-
-
 
 			//Add quick custom mail icons 
 			$output->addHTML('<td class="semorg-showedit">');
