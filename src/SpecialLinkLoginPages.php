@@ -97,19 +97,13 @@ class SpecialLinkLoginPages extends SpecialPage {
 		//get Pages
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'cl_to' => $par
-		];
-		$titles = $dbr->select(
-			['categorylinks','page'],
-			['page_title','page_id'],
-			$conds,
-			__METHOD__,
-			[],
-			[
-				'categorylinks' => [ 'INNER JOIN', [ 'cl_from=page_id'] ]
-			]
-		) ?: [];
+		$titles = $dbr->newSelectQueryBuilder()
+			->select( ['page_title', 'page_id'] )
+			->from( 'categorylinks' )
+			->join( 'page', null, 'cl_from=page_id' )
+			->where( ['cl_to' => $par] )
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
 
 		$pages = [];
 		foreach( $titles as $title ) {
@@ -146,21 +140,15 @@ class SpecialLinkLoginPages extends SpecialPage {
 		//get Users corresponding to pages 
 		foreach( $pages as $page ) {
 			$dbr = $lb->getConnectionRef( DB_REPLICA );
-			$conds = [
-				'page_title' => $page->title
-			];
-			$user = $dbr->selectField(
-				['ll_mapping','page','user'],
-				'user_name',
-				$conds,
-				__METHOD__,
-				[],
-				[            
-					'll_mapping' => [ 'INNER JOIN', ['ll_mapping_page=page_id'] ],
-					'user' =>  ['INNER JOIN', ['ll_mapping_user=user_id'] ]
-				]
-			) ?: [];
-
+			$user = $dbr->newSelectQueryBuilder()
+				->select( ['user_name'] )
+				->from( 'page' )
+				->join( 'll_mapping', null, 'll_mapping_page=page_id')
+				->join( 'user', null, 'll_mapping_user=user_id' )
+				->where( ['page_title' => $page->title] )
+				->caller( __METHOD__ )
+				->fetchField() ?: [];
+			
 			$output->addHTML('<tr id=' . $page->id . '>');
 			$output->addHTML('<td id="pagetitle">' . $page->displaytitle . '</td>');
 
@@ -173,19 +161,14 @@ class SpecialLinkLoginPages extends SpecialPage {
 			} else {             
 				foreach( $groups as $group ) {
 					$dbr = $lb->getConnectionRef( DB_REPLICA );
-					$conds = [
-						'ug_group' => $group
-					];
-					$users = $dbr->selectFieldValues(
-						['user', 'user_groups'],
-						'user_name',
-						$conds,
-						__METHOD__,
-						[],
-						[
-							'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
-						]
-					) ?: [];
+					$users = $dbr->newSelectQueryBuilder()
+						->select( ['user_name'] )
+						->from( 'user_groups' )
+						->join( 'user', null, 'user_id=ug_user' )
+						->where( ['ug_group' => $group] )
+						->caller( __METHOD__ )
+						->fetchFieldValues() ?: [];
+
 				}                
 				sort($users);
 				//User Column

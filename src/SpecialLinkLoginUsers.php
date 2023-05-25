@@ -72,22 +72,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		//get users
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'ug_group' => $par
-		];
-		$options = [
-			'ORDER BY' => 'user_name ASC',
-		];
-		$users = $dbr->select(
-			['user', 'user_groups'],
-			['user_name', 'user_id', 'user_email_token'],
-			$conds,
-			__METHOD__,
-			$options,
-			[
-				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
-			]
-		) ?: [];
+		$users = $dbr->newSelectQueryBuilder()
+			->select( ['user_name', 'user_id', 'user_email_token'] )
+			->from( 'user' )
+			->join( 'user_groups', null, 'user_id=ug_user' )
+			->where( ['ug_group' => $par] )
+			->orderBy('user_name', 'ASC')
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
+		
+
 
 		//get display titles
 		$categories = LinkLogin::getLinkLoginCategories([$par]);
@@ -158,21 +152,15 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		//get all pages belonging to the group's categories
 		$unlinked_pages = [];
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'cl_to' => $categories
-		];
-		$pages = $dbr->select(
-			['categorylinks','page'],
-			['page_title','page_id'],
-			$conds,
-			__METHOD__,
-			[],
-			[
-				'categorylinks' => [ 'INNER JOIN', [ 'cl_from=page_id'] ]
-			]
-		) ?: [];
+		$pages = $dbr->newSelectQueryBuilder()
+			->select( ['page_title', 'page_id'] )
+			->from( 'categorylinks' )
+			->join( 'page', null, 'cl_from=page_id' )
+			->where( ['cl_to' => $categories] )
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
+
 		if( !empty($pages) ) {
 			foreach( $pages as $page ) {
 				$page->displaytitle = array_search( str_replace( '_' ,' ', $page->page_title ), $displaytitles );
@@ -208,15 +196,67 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('<th class="semorg-showedit"></th>');
 		$output->addHTML('</tr>');
 
+		//get all preferences set in $wgLinkLoginPreferences
 		$preferences = array_keys( $GLOBALS['wgLinkLoginPreferences'] );
-		if( !in_array( 'email', $preferences ) ) {
-			array_unshift($preferences, 'email');
+		if( empty($preferences) ) {
+			$preferences = ['email'];
+		}
+
+		//get all user_property values
+		$user_ids = [];
+		foreach( $users as $user ) {
+			$user_ids[] = $user->user_id;
+		}
+		$user_properties = [];
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$user_properties_query = $dbr->newSelectQueryBuilder()
+			->select( [
+				'up_user',
+				'up_property',
+				'up_value'
+			])
+			->from( 'user_properties' )
+			->where(' up_property IN (' . implode(', ', array_map(function($val){return sprintf("'%s'", $val);}, $preferences)) . ') ')
+			->where(' up_user IN (' . implode(',', $user_ids) . ') ')
+			->caller( __METHOD__ )
+			->fetchResultSet();
+		
+		$user_properties = [];
+		
+		//add user_properties to array in the order of preferences
+		foreach( $preferences as $preference ) {
+			foreach( $user_properties_query as $user_property ) {
+				if( $preference == $user_property->up_property ) {
+					$user_properties[$user_property->up_user][$user_property->up_property] = $user_property->up_value;
+				}
+			}
 		}
 
 		foreach( $users as $user ) {
+			//Look if User has an e-mail assoiciated to them
+			$user_mail = \User::newFromId($user->user_id);
+			$user->email = $uom->getOption( $user_mail, 'email');
+
 			$user_name = str_replace(' ', '_', $user->user_name);
 			$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
-			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>' . '</td>');
+			$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
+			$output->addHTML('<div class="linklogin-user-properties">');
+			if( !isset( $user_properties[$user->user_id] ) ) {
+				$user_properties[$user->user_id]['email'] = $user->email;
+			}
+			foreach($user_properties[$user->user_id] as $user_property => $property_value) {
+				$output->addHTML('<div class="linklogin-user-property">');
+				if( wfMessage('linklogin-pref-' . $user_property)->exists() ) {
+					$output->addHTML('<span class="linklogin-user-property-name">' . wfMessage('linklogin-pref-' . $user_property)->text() . ': ' . '</span>');
+				} else {
+					$output->addHTML('<span class="linklogin-user-property-name">' . ucfirst($user_property) . ': ' . '</span>');
+				}
+				$output->addHTML('<span class="linklogin-user-property-value">' . $property_value . '</span>');
+				$output->addHTML('</div>');
+			}
+			$output->addHTML('</div>');
+			$output->addHTML('</td>');
 			$output->addHTML('<td id="' . $user_name . 'Pages">');
 			if( array_key_exists($user->user_name, $linked_pages)){
 				$output->addHTML('<ul id="' . $user_name . 'List">');
@@ -247,25 +287,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$output->addHTML('</div></div>');
 			$output->addHTML('</td>');
 
-			//Look if User has an e-mail assoiciated to them
-			$user_mail = \User::newFromId($user->user_id);
-			foreach( $preferences as $preference ) {
-				$user_mail->{$preference} = $uom->getOption( $user_mail, $preference );
-			}
-			if( isset($user_mail->email) ){
-				$email = $user_mail->email;
-			} else {
-				$email = "";
-			}
+
 
 			//Add quick custom mail icons 
 			$output->addHTML('<td class="semorg-showedit">');
 			if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
 				$link = $this->createCustomMailLink($loginpage,$user);
 				$output->addHTML('<a id="' . $link . '" class="copy clipboard mr-2" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
-				if( !empty($email) ){
+				if( !empty($user->email) ){
 					$encoded_link = urlencode($link);
-					$output->addHTML('<a href="mailto:' . $email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
+					$output->addHTML('<a href="mailto:' . $user->email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
 				}
 			}
 			$output->addHTML('</td>');
