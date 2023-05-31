@@ -21,6 +21,8 @@
 	"linklogin-mail-link": "Send login link via email",
 	"linklogin-edit-user": "Edit user (opens in new window)",
 	"linklogin-unlink": "Unlink",
+	"linklogin-filter": "Filter",
+	"linklogin-filter-delete": "Delete Filter",
 	"linklogin-user-create-short": "Create",
 	"linklogin-user-create-long": "Create new user:",
 	"linklogin-user-create-placeholder": "New User",
