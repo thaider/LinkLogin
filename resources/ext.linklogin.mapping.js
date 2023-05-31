@@ -110,6 +110,7 @@ jQuery( function( $ ) {
 		window.open(editURL, '_blank');
 	})); 
 
+	//Copy Login Link to Clipboard
 	$('#linklogin-body').on('click', '.copy.clipboard', (function( e ) {
 		e.preventDefault();
 		const copyLink = $(this).attr("id");
@@ -118,6 +119,22 @@ jQuery( function( $ ) {
 			console.error('Async: Could not copy text: ', err);
 		});
 	})); 
+
+	//Set user_property filter on Special:Link Login Users
+	$('#dropdown-menu-user-properties').on('click', '.dropdown-item.user-property', function(e) {
+		e.preventDefault();
+		const invert = $('#option-has-not').parents().hasClass('active');
+		const user_property = $(this).text();
+		//get location without query string
+		const location = window.location.href.split('?')[0];
+		let filterURL;
+		if( invert == true ) {
+			filterURL = location + '?filter=' + user_property + '&invert=' + invert;
+		} else {
+			filterURL = location + '?filter=' + user_property;
+		}
+		window.open(filterURL, '_self');
+	});
 
 	function createAccount(user, page){
 		$.get(baseApiURL,

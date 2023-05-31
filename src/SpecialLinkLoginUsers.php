@@ -233,7 +233,11 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		//check if a filter is set
 		$query_filter = $this->getRequest()->getQueryValues();
+		$filter_invert = false;
 		if( isset( $query_filter['filter'] ) ) {
+			if( isset( $query_filter['invert'] ) ) {
+				$filter_invert = true;
+			}
 			$query_filter = $query_filter['filter'];
 		} else {
 			$query_filter = false;
@@ -241,25 +245,46 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		//if filter is set show only users where the filter value is not set or empty
 		$filtered_users = [];
-		if( ($query_filter)  && $query_filter != 'email') {
-			foreach( $users as $user ) {
-				if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] != '' ) {
-					$filtered_users[] = $user->user_id;
-				}
-			}
-		} elseif ( $query_filter == 'email' ) { //show only users where the email is not set
-			foreach( $users as $user ) {
-				//Check if user has an e-mail associated to them
-				$user_mail = \User::newFromId($user->user_id);
-				$user->email = $uom->getOption( $user_mail, 'email');
-				if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] != '' ) {
-					if( (isset($user->email) && $user->email != '')) {
+		if( $filter_invert ) {
+			//has not filter
+			if( $query_filter && $query_filter != 'email') {
+				foreach( $users as $user ) {
+					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] != '' ) {
 						$filtered_users[] = $user->user_id;
 					}
 				}
-			}
+			} elseif ( $query_filter == 'email' ) { //show only users where the email is not set
+				foreach( $users as $user ) {
+					//Check if user has an e-mail associated to them
+					$user_mail = \User::newFromId($user->user_id);
+					$user->email = $uom->getOption( $user_mail, 'email');
+					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] != '' ) {
+						if( isset($user->email) && $user->email != '') {
+							$filtered_users[] = $user->user_id;
+						}
+					}
+				}
+			} 
 		} else {
-			$filtered_users = [];
+			//has filter
+			if( $query_filter && $query_filter != 'email'){
+				foreach( $users as $user ) {
+					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] == '' ) {
+						$filtered_users[] = $user->user_id;
+					}
+				}
+			} elseif ( $query_filter == 'email' ) { //show only users where the email is not set
+				foreach( $users as $user ) {
+					//Check if user has an e-mail associated to them
+					$user_mail = \User::newFromId($user->user_id);
+					$user->email = $uom->getOption( $user_mail, 'email');
+					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] == '' ) {
+						if( !isset($user->email) || $user->email == '') {
+							$filtered_users[] = $user->user_id;
+						}
+					}
+				}
+			}
 		}
 
 		if( wfMessage( 'group-' . $par )->exists() ) {
@@ -274,15 +299,38 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			$output->addHTML('<a href="' . $url . '">' . $assoc_cat . '</a>' . ' ');
 		}
 		$output->addHTML('</div>');
+
 		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-filter") . ': ');
+		//toggle for has or has not user_property
+		$output->addHTML('<div class="btn-group btn-group-toggle mr-2" data-toggle="buttons">');
+		$output->addHTML('<label class="btn btn-secondary btn-sm' . ($filter_invert ? '">' : ' active">'));
+    	$output->addHTML('<input type="radio" name="options" id="option-has" autocomplete="off" checked>' . wfMessage("linklogin-filter-has") . '</label>');
+  		$output->addHTML('<label class="btn btn-secondary btn-sm' . ($filter_invert ? ' active">' : '">'));
+    	$output->addHTML('<input type="radio" name="options" id="option-has-not" autocomplete="off">' . wfMessage("linklogin-filter-has-not") . '</label>');
+		$output->addHTML('</div>');
+
+		//dropdown for filtering by user_property
+		$output->addHTML('<div class="btn-group">');
+		$output->addHTML('<div class="dropdown">');
+		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? ucfirst($query_filter) : wfMessage("linklogin-filter-property")) . '</button>');
+		$output->addHTML('<div class="dropdown-menu" id="dropdown-menu-user-properties" aria-labelledby="user_properties">');
 		foreach( $properties as $property ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=' . $property;
-			$output->addHTML('<a href="' . $url . '">' . $property . '</a>' . ' ');
+			$output->addHTML('<a class="dropdown-item user-property" href="#">' . $property . '</a>');
 		}
+		$output->addHTML('</div>');
+		$output->addHTML('</div>');
+
+
+		$output->addHTML('</div>');
 		if( $query_filter ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par;
 			$output->addHTML('| <a href="' . $url . '">' . wfMessage("linklogin-filter-delete") . '</a>');
 		}
+		$output->addHTML('</div>');
+		
+
+
 		$output->addHTML('</div>');
 		$output->addHTML('<container id="linklogin-body">');
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
