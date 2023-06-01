@@ -210,10 +210,11 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				'up_value'
 			])
 			->from( 'user_properties' )
-			->where(
-				[ 'up_property' => $preferences ],
-				[ 'up_user' => $user_ids ],
-			)
+			->where([ 
+				'up_property' => $preferences,
+				'up_user' => $user_ids,
+				'up_value != ""',
+			])
 			->caller( __METHOD__ )
 			->fetchResultSet();
 				
@@ -223,12 +224,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			foreach( $user_properties_query as $user_property ) {
 				if( $preference == $user_property->up_property ) {
 					$user_properties[$user_property->up_user][$user_property->up_property] = $user_property->up_value;
-					$properties[] = $user_property->up_property;
 				}
 			}
 		}
 
-		$properties = array_unique( $properties );
 		$old_par = $par;
 
 		//check if a filter is set
@@ -249,7 +248,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			//has not filter
 			if( $query_filter ) {
 				foreach( $users as $user ) {
-					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] == '' ) {
+					if( !isset( $user_properties[$user->user_id][$query_filter] ) ) {
 						$filtered_users[] = $user->user_id;
 					}
 				}
@@ -258,7 +257,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 			//has filter
 			if( $query_filter ){
 				foreach( $users as $user ) {
-					if( isset( $user_properties[$user->user_id][$query_filter] ) && $user_properties[$user->user_id][$query_filter] != '' ) {
+					if( isset( $user_properties[$user->user_id][$query_filter] ) ) {
 						$filtered_users[] = $user->user_id;
 					}
 				}
@@ -292,9 +291,9 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('<div class="dropdown">');
 		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? ucfirst($query_filter) : wfMessage("linklogin-filter-property")) . '</button>');
 		$output->addHTML('<div class="dropdown-menu" id="dropdown-menu-user-properties" aria-labelledby="user_properties">');
-		foreach( $properties as $property ) {
-			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=' . $property;
-			$output->addHTML('<a class="dropdown-item user-property" href="#">' . $property . '</a>');
+		foreach( $preferences as $preference ) {
+			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=' . $preference;
+			$output->addHTML('<a class="dropdown-item user-property" href="#">' . $preference . '</a>');
 		}
 		$output->addHTML('</div>');
 		$output->addHTML('</div>');
