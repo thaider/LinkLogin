@@ -124,7 +124,7 @@ jQuery( function( $ ) {
 	$('#dropdown-menu-user-properties').on('click', '.dropdown-item.user-property', function(e) {
 		e.preventDefault();
 		const invert = $('#option-has-not').parents().hasClass('active');
-		const user_property = $(this).text();
+		const user_property = $(this).attr('data-preference');
 		//get location without query string
 		const location = window.location.href.split('?')[0];
 		let filterURL;
@@ -135,6 +135,43 @@ jQuery( function( $ ) {
 		}
 		window.open(filterURL, '_self');
 	});
+
+	//change filter by switching between has/has not if filter is already set
+	if( window.location.href.split('?')[1] != undefined ) {
+		let filterQuery = window.location.href.split('?')[1];
+		if( filterQuery.split('&')[0].split('=')[1] != 'noentries') {
+			$('#filter-toggle-buttongroup').on('click', '#has-not-button', function(e) {
+				e.preventDefault();
+				let filterQuery = window.location.href.split('?')[1];
+				let invert = false;
+				if( filterQuery.split('&')[1] != undefined ) {
+					invert = filterQuery.split('&')[1].split('=')[1];
+				}
+				const filter = filterQuery.split('&')[0].split('=')[1];
+				if( invert == 'true' ) {
+					return;
+				} else {
+					const filterURL = window.location.href.split('?')[0] + '?filter=' + filter + '&invert=true';
+					window.open(filterURL, '_self');
+				}
+			});
+
+			$('#filter-toggle-buttongroup').on('click', '#has-button', function(e) {
+				e.preventDefault();
+				let invert = false;
+				if( filterQuery.split('&')[1] != undefined ) {
+					invert = filterQuery.split('&')[1].split('=')[1];
+				}
+				const filter = filterQuery.split('&')[0].split('=')[1];
+				if( invert == 'true' ) {
+					const filterURL = window.location.href.split('?')[0] + '?filter=' + filter;
+					window.open(filterURL, '_self');
+				} else {
+					return;
+				}
+			});
+		}
+	}
 
 	function createAccount(user, page){
 		$.get(baseApiURL,
