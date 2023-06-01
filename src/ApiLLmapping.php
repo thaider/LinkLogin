@@ -66,18 +66,13 @@ class ApiLLmapping extends ApiBase {
 	public function ll_map($user, $page){
 		//get user_id
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'user_name' => $user
-		];
-		$user_id = $dbr->selectField(
-			'user',
-			'user_id',
-			$conds,
-			__METHOD__,
-			[],
-			[]
-		) ?: [];
+		$dbr = $lb->getConnectionRef( DB_REPLICA );		
+		$user_id = $dbr->newSelectQueryBuilder()
+			->select( 'user_id' )
+			->from( 'user' )
+			->where( ['user_name' => $user] )
+			->caller( __METHOD__ )
+			->fetchField() ?: [];
 
 		$page_id = $page;
 
@@ -102,17 +97,12 @@ class ApiLLmapping extends ApiBase {
 
 		//get user_id
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'user_name' => $user
-		];
-		$user_id = $dbr->selectField(
-			'user',
-			'user_id',
-			$conds,
-			__METHOD__,
-			[],
-			[]
-		) ?: [];
+		$user_id = $dbr->newSelectQueryBuilder()
+			->select( 'user_id' )
+			->from( 'user' )
+			->where( ['user_name' => $user] )
+			->caller( __METHOD__ )
+			->fetchField() ?: [];
 
 		$page_id = $page;
 
@@ -139,34 +129,24 @@ class ApiLLmapping extends ApiBase {
 
 		//get user_id
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'user_name' => $user
-		];
-		$user_id = $dbr->selectField(
-			'user',
-			'user_id',
-			$conds,
-			__METHOD__,
-			[],
-			[]
-		) ?: [];
+		$user_id = $dbr->newSelectQueryBuilder()
+			->select( 'user_id' )
+			->from( 'user' )
+			->where( ['user_name' => $user] )
+			->caller( __METHOD__ )
+			->fetchField() ?: [];
 
 		$page_id = $page;
 
 		//get all Categories connected to Page
 		if( !empty( $user_id ) && !empty( $page_id ) ) {
 			$dbr = $lb->getConnectionRef( DB_REPLICA );
-			$conds = [
-				'cl_from' => $page_id
-			];
-			$categories = $dbr->selectFieldValues(
-				'categorylinks',
-				'cl_to',
-				$conds,
-				__METHOD__,
-				[],
-				[]
-			) ?: [];
+			$categories = $dbr->newSelectQueryBuilder()
+				->select( 'cl_to' )
+				->from( 'categorylinks' )
+				->where( ['cl_from' => $page_id] )
+				->caller( __METHOD__ )
+				->fetchFieldValues() ?: [];
 
 			//get Groups connected to Categories
 			if( !empty( $categories ) ) {

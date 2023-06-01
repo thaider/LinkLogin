@@ -25,12 +25,12 @@ class SpecialEditMailing extends SpecialPage {
 		if( isset( $par ) ) {
 			$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 			$dbr = $lb->getConnectionRef( DB_REPLICA );
-			$conds = ['ll_mailing_id' => $par];
-			$mailing = $dbr->selectRow(
-				'll_mailing',
-				['*'],
-				$conds
-			) ?: [];
+			$mailing = $dbr->newSelectQueryBuilder()
+				->select( ['*'] )
+				->from( 'll_mailing' )
+				->where(['ll_mailing_id' => $par])
+				->caller( __METHOD__ )
+				->fetchRow() ?: [];
 		}
 
 		$special = SpecialPage::getTitleFor( 'EditMailing' );

@@ -34,16 +34,13 @@ class LinkLogin {
 			$conds[] = "(TRIM('\0' FROM user_email_token)='' OR user_email_token is null)";
 		}
 
-		$users = $dbr->selectFieldValues(
-			[ 'user', 'user_groups' ],
-			'user_id', 
-			$conds, 
-			__METHOD__,
-			[],
-			[
-				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
-			]
-		);
+		$users = $dbr->newSelectQueryBuilder()
+			->select( 'user_id' )
+			->from( 'user' )
+			->join( 'user_groups', null, 'user_id=ug_user' )
+			->where( $conds )
+			->caller( __METHOD__ )
+			->fetchFieldValues();
 
 		if( count( $users ) > 0 ) {
 			$dbw = $lb->getConnectionRef( DB_PRIMARY );
@@ -111,22 +108,18 @@ class LinkLogin {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'user_email' => '',
-			'user_email_token' => $token,
-			'user_email_token_expires' => null,
-			'ug_group' => $groups,
-		];
-		$userId = $dbr->selectField(
-			[ 'user', 'user_groups' ],
-			'user_id',
-			$conds,
-			__METHOD__,
-			[],
-			[
-				'user' => [ 'INNER JOIN', [ 'user_id=ug_user'] ]
-			]
-		);
+		$userId = $dbr->newSelectQueryBuilder()
+			->select( 'user_id' )
+			->from( 'user' )
+			->join( 'user_groups', null, 'user_id=ug_user' )
+			->where([
+				'user_email' => '',
+				'user_email_token' => $token,
+				'user_email_token_expires' => null,
+				'ug_group' => $groups,
+			])
+			->fetchField();
+
 		return $userId;
 	}
 
@@ -164,23 +157,20 @@ class LinkLogin {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'user_id' => $groupUsers,
-			'user_email' => '',
-			"(TRIM('\0' FROM user_email_token)!='' OR not user_email_token is null)",
-			'user_email_token_expires' => null,
+		$LinkLoginUsers = $dbr->newSelectQueryBuilder()
+			->select( 'user_name', 'user_email_token', 'user_id' )
+			->from( 'user' )
+			->where([
+				'user_id' => $groupUsers,
+				'user_email' => '',
+				"(TRIM('\0' FROM user_email_token)!='' OR not user_email_token is null)",
+				'user_email_token_expires' => null,
+			])
+			->orderBy( 'user_name' )
+			->distinct()
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
 
-		];
-		$LinkLoginUsers = $dbr->select(
-			'user',
-			['user_name','user_email_token', 'user_id'],
-			$conds,
-			__METHOD__,
-			[
-				'DISTINCT' => true,
-				'ORDER BY' => 'user_name'
-			]
-		) ?: [];
 		return $LinkLoginUsers;
 	}
 
@@ -207,19 +197,15 @@ class LinkLogin {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [ 
-			'ug_group' => $groups 
-		];
-		$groupUsers = $dbr->selectFieldValues(
-			'user_groups',
-			'ug_user',
-			$conds,
-			__METHOD__,
-			[
-				'DISTINCT' => true,
-				'ORDER BY' => 'ug_user'
-			]
-		) ?: [];
+		$groupUsers = $dbr->newSelectQueryBuilder()
+			->select( 'ug_user' )
+			->from( 'user_groups' )
+			->where( ['ug_group' => $groups] )
+			->orderBy( 'ug_user' )
+			->distinct()
+			->caller( __METHOD__ )
+			->fetchFieldValues() ?: [];
+
 		return $groupUsers;
 	}
 
@@ -350,23 +336,18 @@ class LinkLogin {
 	public static function getPagesForUser( $user_id, $categories ) {
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [
-			'll_mapping_user' => $user_id,
-			'cl_to' => $categories
-		];
-
-		$pages = $dbr->select(
-			['ll_mapping','user', 'page', 'categorylinks'],
-			['page_title','page_id'],
-			$conds,
-			__METHOD__,
-			[],
-			[
-				'user' => [ 'INNER JOIN', [ 'user_id=ll_mapping_user'] ],
-				'page' => [ 'INNER JOIN', [ 'page_id=ll_mapping_page'] ],
-				'categorylinks' => [ 'INNER JOIN', [ 'cl_from=page_id'] ]
-			]
-		) ?: [];
+		$pages = $dbr->newSelectQueryBuilder()
+			->select( ['page_title', 'page_id'] )
+			->from( 'll_mapping' )
+			->join('user', null, 'user_id=ll_mapping_user')
+			->join('page', null, 'page_id=ll_mapping_page')
+			->join('categorylinks', null, 'cl_from=page_id')
+			->where([
+				'll_mapping_user' => $user_id,
+				'cl_to' => $categories
+			])
+			->caller( __METHOD__)
+			->fetchResultSet() ?: [];
 
 		return $pages;
 	}
@@ -419,13 +400,15 @@ class LinkLogin {
 			if ($id % $threshold == 0) {
 				$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 				$dbr = $lb->getConnectionRef( DB_REPLICA );
-				$res = $dbr->select( 
-					'll_attemptlog',
-					['ll_attemptlog_timestamp','ll_attemptlog_notification'],
-					['MOD(ll_attemptlog_id,' . $threshold . ') = 0'],
-					__METHOD__, 
-					['ORDER BY' => 'll_attemptlog_id DESC'],
-				);	
+				$res = $dbr->newSelectQueryBuilder()
+					->select( ['ll_attemptlog_timestamp','ll_attemptlog_notification'] )
+					->from( 'll_attemptlog' )
+					->where([
+						'MOD(ll_attemptlog_id,' . $threshold . ') = 0'
+					])
+					->orderBy('ll_attemptlog_id DESC')
+					->caller( __METHOD__)
+					->fetchResultSet();
 				$attempts = [];
 				foreach ($res as $row) {
 					$attempts[] = [$row->ll_attemptlog_timestamp,$row->ll_attemptlog_notification];
