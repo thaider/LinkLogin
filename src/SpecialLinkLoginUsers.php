@@ -318,7 +318,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('</tr>');
 
 		foreach( $users as $user ) {
-			if( in_array( $user->user_id, $filtered_users ) ) {
+			if( !$query_filter || in_array( $user->user_id, $filtered_users ) ) {
 				//Check if user has an e-mail associated to them
 				$user_mail = \User::newFromId($user->user_id);
 				$user->email = $uom->getOption( $user_mail, 'email');
