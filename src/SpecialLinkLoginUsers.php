@@ -247,41 +247,19 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$filtered_users = [];
 		if( $filter_invert ) {
 			//has not filter
-			if( $query_filter && $query_filter != 'email') {
+			if( $query_filter ) {
 				foreach( $users as $user ) {
-					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] != '' ) {
+					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] == '' ) {
 						$filtered_users[] = $user->user_id;
-					}
-				}
-			} elseif ( $query_filter == 'email' ) { //show only users where the email is not set
-				foreach( $users as $user ) {
-					//Check if user has an e-mail associated to them
-					$user_mail = \User::newFromId($user->user_id);
-					$user->email = $uom->getOption( $user_mail, 'email');
-					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] != '' ) {
-						if( isset($user->email) && $user->email != '') {
-							$filtered_users[] = $user->user_id;
-						}
 					}
 				}
 			} 
 		} else {
 			//has filter
-			if( $query_filter && $query_filter != 'email'){
+			if( $query_filter ){
 				foreach( $users as $user ) {
-					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] == '' ) {
+					if( isset( $user_properties[$user->user_id][$query_filter] ) && $user_properties[$user->user_id][$query_filter] != '' ) {
 						$filtered_users[] = $user->user_id;
-					}
-				}
-			} elseif ( $query_filter == 'email' ) { //show only users where the email is not set
-				foreach( $users as $user ) {
-					//Check if user has an e-mail associated to them
-					$user_mail = \User::newFromId($user->user_id);
-					$user->email = $uom->getOption( $user_mail, 'email');
-					if( !isset( $user_properties[$user->user_id][$query_filter] ) || $user_properties[$user->user_id][$query_filter] == '' ) {
-						if( !isset($user->email) || $user->email == '') {
-							$filtered_users[] = $user->user_id;
-						}
 					}
 				}
 			}
@@ -325,7 +303,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('</div>');
 		if( $query_filter ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par;
-			$output->addHTML('| <a href="' . $url . '">' . wfMessage("linklogin-filter-delete") . '</a>');
+			$output->addHTML(' <a href="' . $url . '">' . wfMessage("linklogin-filter-delete") . '</a>');
 		}
 		$output->addHTML('</div>');
 		
@@ -340,7 +318,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('</tr>');
 
 		foreach( $users as $user ) {
-			if( !in_array( $user->user_id, $filtered_users ) ) {
+			if( in_array( $user->user_id, $filtered_users ) ) {
 				//Check if user has an e-mail associated to them
 				$user_mail = \User::newFromId($user->user_id);
 				$user->email = $uom->getOption( $user_mail, 'email');

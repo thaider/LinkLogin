@@ -25,6 +25,7 @@
 	"linklogin-filter-has": "Has",
 	"linklogin-filter-has-not": "Doesn't have",
 	"linklogin-filter-property": "User property",
+	"linklogin-filter-delete": "Delete filter",
 	"linklogin-user-create-short": "Create",
 	"linklogin-user-create-long": "Create new user:",
 	"linklogin-user-create-placeholder": "New User",
