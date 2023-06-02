@@ -20,17 +20,13 @@ class SpecialLoginAttemptLog extends SpecialPage {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [];
-		$options = [];
-		$options['LIMIT'] = 100;
-		$options['ORDER BY'] = 'll_attemptlog_timestamp DESC';
-		$attemptlogs = $dbr->select(
-			'll_attemptlog',
-			['ll_attemptlog_hash','ll_attemptlog_ip','ll_attemptlog_timestamp'],
-			$conds,
-			__METHOD__,
-			$options
-		) ?: [];
+		$attemptlogs = $dbr->newSelectQueryBuilder()
+			->select( ['ll_attemptlog_hash','ll_attemptlog_ip','ll_attemptlog_timestamp'] )
+			->from( 'll_attemptlog' )
+			->orderBy( 'll_attemptlog_timestamp DESC' )
+			->limit( 100 )
+			->caller( __METHOD__ )
+			->fetchResultSet();
 
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		foreach( [ 'ip', 'hash', 'timestamp' ] as $header ) {

@@ -21,17 +21,13 @@ class SpecialLoginLog extends SpecialPage {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [];
-		$options = [];
-		$options['LIMIT'] = 100;
-		$options['ORDER BY'] = 'll_loginlog_timestamp DESC';
-		$loginlogs = $dbr->select(
-			'll_loginlog',
-			['ll_loginlog_hash','ll_loginlog_user','ll_loginlog_timestamp'],
-			$conds,
-			__METHOD__,
-			$options
-		) ?: [];
+		$loginlogs = $dbr->newSelectQueryBuilder()
+			->select( ['ll_loginlog_hash','ll_loginlog_user','ll_loginlog_timestamp'] )
+			->from( 'll_loginlog' )
+			->orderBy( 'll_loginlog_timestamp DESC' )
+			->limit( 100 )
+			->caller( __METHOD__ )
+			->fetchResultSet() ?: [];
 
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		foreach( [ 'user', 'hash', 'timestamp' ] as $header ) {

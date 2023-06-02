@@ -43,12 +43,10 @@ class SpecialMailings extends SpecialPage {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = [];
-		$mailings = $dbr->select(
-			'll_mailing',
-			['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'],
-			$conds
-		) ?: [];
+		$mailings = $dbr->newSelectQueryBuilder()
+			->select(['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'])
+			->from( 'll_mailing' )
+			->fetchResultSet() ?: [];
 
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
 		foreach( [ 'created', 'title', 'subject', 'template', 'loginpage', 'group' ] as $header ) {
@@ -136,13 +134,13 @@ class SpecialMailings extends SpecialPage {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = ['ll_mailing_id' => $par];
-		$mailing = $dbr->selectRow(
-			'll_mailing',
-			['*'],
-			$conds
-		) ?: [];
-
+		$mailing = $dbr->newSelectQueryBuilder()
+			->select( '*' )
+			->from( 'll_mailing' )
+			->where( ['ll_mailing_id' => $par] )
+			->caller( __METHOD__)
+			->fetchRow() ?: [];
+		
 		$mailing->email_columns = explode(',' , $mailing->ll_mailing_email);
 		foreach ($mailing->email_columns as &$preference) {
 			$preference = trim($preference);
@@ -173,12 +171,12 @@ class SpecialMailings extends SpecialPage {
 		$only = $this->createOnlyExcept( $mailing->ll_mailing_only );
 		$except = $this->createOnlyExcept( $mailing->ll_mailing_except );
 
-		$conds = ['ll_mailinglog_mailing' => $par];
-		$sent_res = $dbr->select(
-				'll_mailinglog',
-				['ll_mailinglog_user','ll_mailinglog_timestamp'],
-				$conds
-			);
+		$sent_res = $dbr->newSelectQueryBuilder()
+			->select( ['ll_mailinglog_user', 'll_mailinglog_timestamp'] )
+			->from( 'll_mailinglog' )
+			->where( ['ll_mailinglog_mailing' => $par] )
+			->caller( __METHOD__ )
+			->fetchResultSet();
 
 		$sent = [];
 		foreach( $sent_res as $row ) {
@@ -395,12 +393,12 @@ class SpecialMailings extends SpecialPage {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = ['ll_mailinglog_mailing' => $mailing->ll_mailing_id];
-		$sent = $dbr->selectFieldValues(
-			'll_mailinglog',
-			'll_mailinglog_user',
-			$conds
-		) ?: [];
+		$sent = $dbr->newSelectQueryBuilder()
+			->select( 'll_mailinglog_user' )
+			->from( 'll_mailinglog' )
+			->where( ['ll_mailinglog_mailing' => $mailing->ll_mailing_id] )
+			->caller( __METHOD__ )
+			->fetchFieldValues() ?: [];
 
 		$uom = MediaWikiServices::getInstance()->getUserOptionsManager();
 
@@ -495,12 +493,12 @@ class SpecialMailings extends SpecialPage {
 
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
-		$conds = ['ll_mailinglog_mailing' => $mailing->ll_mailing_id];
-		$sent = $dbr->selectFieldValues(
-			'll_mailinglog',
-			'll_mailinglog_user',
-			$conds
-		) ?: [];
+		$sent = $dbr->newSelectQueryBuilder()
+			->select( 'll_mailinglog_user' )
+			->from( 'll_mailinglog' )
+			->where( ['ll_mailinglog_mailing' => $mailing->ll_mailing_id] )
+			->caller( __METHOD__ )
+			->fetchFieldValues() ?: [];
 
 		foreach( $recipients as $recipient ) {
 			if( in_array( $recipient->user_name, $selected_recipients ) ) {

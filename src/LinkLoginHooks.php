@@ -275,16 +275,13 @@ class LinkLoginHooks {
 		if (isset($options['after'])) {
 			$conds[] = 'll_mailinglog_timestamp' . '>=' . $options['after']; 
 		}
-		$users = $dbr->selectFieldValues(
-			[ 'user', 'll_mailinglog' ],
-			'user_name', 
-			$conds, 
-			__METHOD__,
-			[],
-			[
-				'user' => [ 'INNER JOIN', [ 'user_id=ll_mailinglog_user'] ]
-			]
-		);
+		$users = $dbr->newSelectQueryBuilder()
+			->select('user_name')
+			->from('user')
+			->join('ll_mailinglog', null, 'user_id=ll_mailinglog_user')
+			->where($conds)
+			->caller(__METHOD__)
+			->fetchFieldValues();
 		
 		$output = join($delimiter, $users);
 		return $output;
