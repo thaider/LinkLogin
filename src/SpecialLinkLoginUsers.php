@@ -303,11 +303,11 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		//dropdown for filtering by user_property
 		$output->addHTML('<div class="btn-group">');
 		$output->addHTML('<div class="dropdown">');
-		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? (wfMessage('linklogin-' . $query_filter)->exists() ? wfMessage('linklogin-' . $query_filter) : ucfirst($query_filter)) : wfMessage("linklogin-filter-property")) . '</button>');
+		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? (wfMessage('linklogin-pref-' . $query_filter)->exists() ? wfMessage('linklogin-pref-' . $query_filter) : ucfirst($query_filter)) : wfMessage("linklogin-filter-property")) . '</button>');
 		$output->addHTML('<div class="dropdown-menu" id="dropdown-menu-user-properties" aria-labelledby="user_properties">');
 		foreach( $preferences as $preference ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=' . $preference;
-			$output->addHTML('<a class="dropdown-item user-property" data-preference="' . $preference . '" href="#">' . (wfMessage($preference)->exists() ? wfMessage($preference) : ucfirst($preference)) . '</a>');
+			$output->addHTML('<a class="dropdown-item user-property" data-preference="' . $preference . '" href="#">' . (wfMessage('linklogin-pref-' . $preference)->exists() ? wfMessage('linklogin-pref-' . $preference) : ucfirst($preference)) . '</a>');
 		}
 		$output->addHTML('</div>');
 		$output->addHTML('</div>');
