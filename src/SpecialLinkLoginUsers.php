@@ -233,7 +233,11 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		//check if a filter is set
 		$query_filter = $this->getRequest()->getQueryValues();
 		$filter_invert = false;
+		$filter_noentries = false;
 		if( isset( $query_filter['filter'] ) ) {
+			if( $query_filter['filter'] == 'noentries' ) {
+				$filter_noentries = true;
+			}
 			if( isset( $query_filter['invert'] ) ) {
 				$filter_invert = true;
 			}
@@ -244,21 +248,29 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		//if filter is set show only users where the filter value is not set or empty
 		$filtered_users = [];
-		if( $filter_invert ) {
-			//has not filter
-			if( $query_filter ) {
-				foreach( $users as $user ) {
-					if( !isset( $user_properties[$user->user_id][$query_filter] ) ) {
-						$filtered_users[] = $user->user_id;
-					}
+		if( $filter_noentries ) {
+			foreach( $users as $user ) {
+				if( !isset( $user_properties[$user->user_id] ) ) {
+					$filtered_users[] = $user->user_id;
 				}
-			} 
+			}
 		} else {
-			//has filter
-			if( $query_filter ){
-				foreach( $users as $user ) {
-					if( isset( $user_properties[$user->user_id][$query_filter] ) ) {
-						$filtered_users[] = $user->user_id;
+			if( $filter_invert ) {
+				//has not filter
+				if( $query_filter ) {
+					foreach( $users as $user ) {
+						if( !isset( $user_properties[$user->user_id][$query_filter] ) ) {
+							$filtered_users[] = $user->user_id;
+						}
+					}
+				} 
+			} else {
+				//has filter
+				if( $query_filter ){
+					foreach( $users as $user ) {
+						if( isset( $user_properties[$user->user_id][$query_filter] ) ) {
+							$filtered_users[] = $user->user_id;
+						}
 					}
 				}
 			}
@@ -279,35 +291,33 @@ class SpecialLinkLoginUsers extends SpecialPage {
 
 		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-filter") . ': ');
 		//toggle for has or has not user_property
-		$output->addHTML('<div class="btn-group btn-group-toggle mr-2" data-toggle="buttons">');
-		$output->addHTML('<label class="btn btn-secondary btn-sm' . ($filter_invert ? '">' : ' active">'));
+		$output->addHTML('<div id="filter-toggle-buttongroup" class="btn-group btn-group-toggle mr-2" data-toggle="buttons">');
+		$output->addHTML('<label id="has-button" class="btn btn-secondary btn-sm' . ($filter_noentries ? '">' : ($filter_invert ? '">' : ' active">')));
     	$output->addHTML('<input type="radio" name="options" id="option-has" autocomplete="off" checked>' . wfMessage("linklogin-filter-has") . '</label>');
-  		$output->addHTML('<label class="btn btn-secondary btn-sm' . ($filter_invert ? ' active">' : '">'));
+  		$output->addHTML('<label id="has-not-button" class="btn btn-secondary btn-sm' . ($filter_invert ? ' active">' : '">'));
     	$output->addHTML('<input type="radio" name="options" id="option-has-not" autocomplete="off">' . wfMessage("linklogin-filter-has-not") . '</label>');
+		$output->addHTML('<a href="' . SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=noentries" id="has-nothing-button" class="btn btn-secondary btn-sm' . ($filter_noentries ? ' active"' : '">'));
+    	$output->addHTML('<input type="radio" name="options" id="option-has-nothing" autocomplete="off">' . wfMessage("linklogin-filter-has-nothing") . '</a>');
 		$output->addHTML('</div>');
 
 		//dropdown for filtering by user_property
 		$output->addHTML('<div class="btn-group">');
 		$output->addHTML('<div class="dropdown">');
-		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? ucfirst($query_filter) : wfMessage("linklogin-filter-property")) . '</button>');
+		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? (wfMessage('linklogin-' . $query_filter)->exists() ? wfMessage('linklogin-' . $query_filter) : ucfirst($query_filter)) : wfMessage("linklogin-filter-property")) . '</button>');
 		$output->addHTML('<div class="dropdown-menu" id="dropdown-menu-user-properties" aria-labelledby="user_properties">');
 		foreach( $preferences as $preference ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=' . $preference;
-			$output->addHTML('<a class="dropdown-item user-property" href="#">' . $preference . '</a>');
+			$output->addHTML('<a class="dropdown-item user-property" data-preference="' . $preference . '" href="#">' . (wfMessage($preference)->exists() ? wfMessage($preference) : ucfirst($preference)) . '</a>');
 		}
 		$output->addHTML('</div>');
 		$output->addHTML('</div>');
-
-
 		$output->addHTML('</div>');
+
 		if( $query_filter ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par;
 			$output->addHTML(' <a href="' . $url . '">' . wfMessage("linklogin-filter-delete") . '</a>');
 		}
 		$output->addHTML('</div>');
-		
-
-
 		$output->addHTML('</div>');
 		$output->addHTML('<container id="linklogin-body">');
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
