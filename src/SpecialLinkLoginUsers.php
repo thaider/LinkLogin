@@ -8,7 +8,7 @@ use SpecialPage;
 
 class SpecialLinkLoginUsers extends SpecialPage {
 	function __construct() {
-		parent::__construct( 'LinkLoginUsers', 'linklogin-link', 'llu' );
+		parent::__construct( 'LinkLoginUsers', 'linklogin-link' );
 	}
 
 
