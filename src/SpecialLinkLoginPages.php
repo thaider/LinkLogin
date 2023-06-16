@@ -130,6 +130,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-associated") . ' ' . wfMessage("linklogin-groups"). ': ');
 		foreach($assoc_groups as $assoc_group){
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $assoc_group;
+			if( wfMessage( 'group-' . $assoc_group )->exists() ) {
+				$assoc_group = wfMessage( 'group-' . $assoc_group )->text();
+			}
 			$output->addHTML('<a href="' . $url . '">' . $assoc_group . '</a>' . ' ');
 		}
 		$output->addHTML('</div>');
