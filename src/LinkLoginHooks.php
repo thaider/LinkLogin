@@ -306,8 +306,14 @@ class LinkLoginHooks {
 	 *
 	 * @return List of pages
 	 */
-	static function renderPages( Parser $parser, $separator = ',' ) {
-		$user = \RequestContext::getMain()->getUser();
+	static function renderPages( Parser $parser ) {
+		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
+
+		if( isset( $options['user'] ) ) {
+			$user = MediaWikiServices::getInstance()->getUserFactory()->newFromname( $options['user'] );
+		} else {
+			$user = \RequestContext::getMain()->getUser();
+		}
 		$categories = LinkLogin::getLinkLoginCategoriesForUser( $user );
 		if( empty( $categories ) ) {
 			return '';
@@ -317,9 +323,7 @@ class LinkLoginHooks {
 		foreach( $pages as $page ) {
 			$titles[] = $page->page_title;
 		}
-		if( $separator == '' ) {
-			$separator = ',';
-		}
+		$separator = $options['sep'] ?? ',';
 		return join( $separator, $titles );
 	}
 

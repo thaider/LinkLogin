@@ -145,12 +145,13 @@ Return list of Users with specific options. Parameters:
 
 Return first parameter, if the current user is a LinkLogin user or the second parameter if not.
 
-### `{{#linklogin-pages:<separator=,>}}`
+### `{{#linklogin-pages:}}`
 
-Return a list of all pages linked to the current user.
+Return a list of all pages linked to a user.
 
 Parameters:
-* separator (optional): separator to be used for the list
+* user (optional): user (default: current user)
+* separator (optional): separator to be used for the list (default: `,`)
 
 
 ## Special Pages 
