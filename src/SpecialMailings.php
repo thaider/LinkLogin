@@ -154,7 +154,7 @@ class SpecialMailings extends SpecialPage {
 			$mailing->ll_mailing_loginpage_title = Title::newFromText($mailing->ll_mailing_loginpage);
 		}
 
-		$recipients = LinkLogin::getLinkLoginUsers();
+		$recipients = LinkLogin::getLinkLoginUsers( $mailing->ll_mailing_group );
 
 		if ( $request->getText( 'll-send', false ) ) {
 			$newsentCount = $this->send( $mailing, $recipients );

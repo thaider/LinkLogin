@@ -192,7 +192,7 @@ class LinkLogin {
 		if( !$groups ) {
 			$groups = self::getLinkLoginGroups() ;
 		} else {
-			$groups = array_intersect( self::getLinkLoginGroups(), $groups );
+			$groups = array_intersect( self::getLinkLoginGroups(), (array) $groups );
 		}
 
 		if( count($groups) == 0 ) {
