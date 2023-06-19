@@ -7,6 +7,7 @@ use DatabaseUpdater;
 use Parser;
 use OutputPage;
 use Skin;
+use SMWQueryProcessor;
 
 /**
  * A wrapper class for the hooks of the LinkLogin extension.
@@ -215,6 +216,7 @@ class LinkLoginHooks {
 		$parser->setFunctionHook( 'linklogin-pref', [ self::class, 'renderLinkLoginPref' ] );
 		$parser->setFunctionHook( 'linklogin-ifuser', [ self::class, 'renderIfUser' ] );
 		$parser->setFunctionHook( 'linklogin-pages', [ self::class, 'renderPages' ] );
+		$parser->setFunctionHook( 'linklogin-users', [ self::class, 'renderUsers' ] );
 	}
 
 
@@ -438,6 +440,63 @@ class LinkLoginHooks {
 		return $output;
 	}
 
+	/**
+	 * Parser function {{#linklogin-users:}}
+	 * 
+	 * Return list of Users mapped to queried sites. Parameters:
+	 * - filter: Only return users with this filter
+	 * - group (optional): Only return users of this group
+	 *
+	 * @param Parser $parser Parser
+	 * 
+	 * @return List of Users
+	 */
+	static function renderUsers( Parser $parser ) {
+		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
+
+		if( isset($options['group']) ) {
+			if( !in_array($options['group'], LinkLogin::getLinkLoginGroups() ) ) {
+				return "";
+			}
+		}
+
+		if( !isset($options['filter']) ) {
+			return "Filter must be set";
+		}
+
+		//SMW Query to get all pages for the specific filter	
+		$params = [
+			$options['filter'],
+			'format=array',
+			'link=none',
+			'sep=<SEP>',
+			'propsep=<PROP>',
+		];
+		list( $query, $processed_params ) = SMWQueryProcessor::getQueryAndParamsFromFunctionParams( $params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE, false );
+		$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
+		$filtered = explode( '<SEP>', $result );
+
+		//Get all users with the specific filter
+		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
+		$dbr = $lb->getConnection( DB_REPLICA );
+		$users = $dbr->newSelectQueryBuilder()
+  			->select('user_name')
+			->from('user')
+			->join('ll_mapping', null, 'll_mapping_user=user_id')
+			->join('page', null, 'll_mapping_page=page_id')
+			->where(['page_title' => $filtered])
+			->caller( __METHOD__ );
+		//filter users by group if set
+		if( isset($options['group']) ) {
+				$users = $users->join('user_groups', null, 'ug_user=user_id')
+				->where(['ug_group' => $options['group'] ]);			
+		}
+		$users = $users->fetchFieldValues() ?: [];
+		$users = array_unique($users);
+		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
+		$output = join($delimiter, $users);
+		return $output;
+	}
 
 	/**
 	 * Load LinkLogin Modules, i.e. scripts, on every Page
