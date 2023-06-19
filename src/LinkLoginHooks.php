@@ -474,6 +474,7 @@ class LinkLoginHooks {
 		];
 		list( $query, $processed_params ) = SMWQueryProcessor::getQueryAndParamsFromFunctionParams( $params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE, false );
 		$result = SMWQueryProcessor::getResultFromQuery( $query, $processed_params, SMW_OUTPUT_WIKI, SMWQueryProcessor::SPECIAL_PAGE );
+		$result = str_replace(' ', '_', $result );
 		$filtered = explode( '<SEP>', $result );
 
 		//Get all users with the specific filter
