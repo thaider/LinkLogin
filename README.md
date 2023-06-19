@@ -134,6 +134,24 @@ Parameters:
 
 Gets comma separated list of logins.
 
+### `{{#linklogin-pref:}}`
+
+Return list of Users with specific options. Parameters:
+* option: WHERE Useroption is set and NOT empty
+* option=false: WHERE Useroption is NOT set or empty
+* option=value: WHERE Useroption is equal to value
+
+### `{{#linklogin-ifuser:<true>|<false>}}`
+
+Return first parameter, if the current user is a LinkLogin user or the second parameter if not.
+
+### `{{#linklogin-pages:<separator=,>}}`
+
+Return a list of all pages linked to the current user.
+
+Parameters:
+* separator (optional): separator to be used for the list
+
 
 ## Special Pages 
 

@@ -158,7 +158,11 @@ class LinkLogin {
 		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
 		$dbr = $lb->getConnectionRef( DB_REPLICA );
 		$LinkLoginUsers = $dbr->newSelectQueryBuilder()
-			->select( 'user_name', 'user_email_token', 'user_id' )
+			->select( [ 
+				'user_name', 
+				'user_email_token', 
+				'user_id' 
+			] )
 			->from( 'user' )
 			->where([
 				'user_id' => $groupUsers,
