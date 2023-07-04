@@ -312,9 +312,12 @@ class LinkLoginHooks {
 		$options = self::extractOptions( array_slice( func_get_args(), 1 ) );
 
 		if( isset( $options['user'] ) ) {
-			$user = MediaWikiServices::getInstance()->getUserFactory()->newFromname( $options['user'] );
+			$user = MediaWikiServices::getInstance()->getUserFactory()->newFromName( $options['user'] );
 		} else {
 			$user = \RequestContext::getMain()->getUser();
+		}
+		if( ! $user instanceof \MediaWiki\User\UserIdentity ) {
+			return '';
 		}
 		$categories = LinkLogin::getLinkLoginCategoriesForUser( $user );
 		if( empty( $categories ) ) {
@@ -323,7 +326,7 @@ class LinkLoginHooks {
 		$pages = LinkLogin::getPagesForUser( $user->getId(), $categories );
 		$title = [];
 		foreach( $pages as $page ) {
-			$titles[] = $page->page_title;
+			$titles[] = str_replace( '_', ' ', $page->page_title );
 		}
 		$separator = $options['sep'] ?? ',';
 		return join( $separator, $titles );

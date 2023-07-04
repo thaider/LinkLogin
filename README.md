@@ -136,7 +136,9 @@ Gets comma separated list of logins.
 
 ### `{{#linklogin-pref:}}`
 
-Return list of Users with specific options. Parameters:
+Return list of Users with specific options. 
+
+Parameters:
 * option: WHERE Useroption is set and NOT empty
 * option=false: WHERE Useroption is NOT set or empty
 * option=value: WHERE Useroption is equal to value
@@ -152,6 +154,14 @@ Return a list of all pages linked to a user.
 Parameters:
 * user (optional): user (default: current user)
 * separator (optional): separator to be used for the list (default: `,`)
+
+### `{{#linklogin-users:}}`
+
+Return list of Users mapped to queried sites. 
+
+Parameters:
+* filter: Only return users with this filter
+* group (optional): Only return users of this group
 
 
 ## Special Pages 
