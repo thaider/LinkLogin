@@ -46,6 +46,7 @@ class SpecialMailings extends SpecialPage {
 		$mailings = $dbr->newSelectQueryBuilder()
 			->select(['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'])
 			->from( 'll_mailing' )
+			->orderBy('ll_mailing_timestamp DESC')
 			->fetchResultSet() ?: [];
 
 		$output->addHTML('<table class="table table-bordered table-sm"><tr>');
