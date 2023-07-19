@@ -221,7 +221,7 @@ class LinkLoginHooks {
 
 
 	/**
-	 * Allow editing for linkLoginUsers only for linked pages
+	 * Allow editing for linkLoginUsers only for linked pages or namespaces explicitly set as editable
 	 *
 	 * @param Title $title
 	 * @param User $user
@@ -231,12 +231,17 @@ class LinkLoginHooks {
 	 * @return Boolean
 	 */
 	public static function ongetUserPermissionsErrors( $title, $user, $action, &$result ) {
+		$ns = $title->getNamespace();
+		if( isset( $GLOBALS['wgLinkLoginEditableNamespaces'][$ns] ) && $GLOBALS['wgLinkLoginEditableNamespaces'][$ns] ) {
+			return true;
+		}
 		$linkLoginUser = LinkLogin::isLinkLoginUser( $user->getId() );
 		if( $linkLoginUser && $action == 'edit' ) {
+			$titleId = $title->getId();
 			$categories = LinkLogin::getLinkLoginCategoriesForUser( $user );
 			$pages = LinkLogin::getPagesForUser( $user->getId(), $categories );
 			foreach( $pages as $page ) {
-				if( $page->page_id == $title->getId() ) {
+				if( $page->page_id == $titleId ) {
 					return true;
 				}
 			}

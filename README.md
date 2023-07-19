@@ -114,10 +114,21 @@ Set it to an e-mail address if you want to be notified after every `$wgLinkLogin
 
 The default is `100`.
 
-### `$LinkLoginAttemptlogPause`
+### `$wgLinkLoginAttemptlogPause`
 
 A notification will only be sent, if the last one was sent at least this many seconds ago. The default is `86400` (24 hours).
 
+### `$wgLinkLoginEditableNamespaces`
+
+LinkLogin users by default can only edit pages linked to their account. Use this option to define namespaces within which LinkLogin users are free to create and edit pages.
+
+Example:
+
+```
+$wgLinkLoginEditableNamespaces = [
+	'3000' => true,
+];
+```
 
 ## Parser Functions
 
