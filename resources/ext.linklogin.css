@@ -37,3 +37,13 @@ a i.fa.fa-pen.edit {
 .linklogin-user-property-name {
 	color:#666;
 }
+
+.linklogin-user.tweeki-advanced .d-advanced-none.d-linklogin, 
+.linklogin-user.tweeki-non-advanced .d-non-advanced-none.d-linklogin, 
+.linklogin-user.tweeki-user-logged-in .d-anon.d-linklogin, 
+.linklogin-user.tweeki-user-logged-in .d-logged-in-none.d-linklogin {
+	display:revert;
+}
+.linklogin-user .d-linklogin-none {
+	display:none;
+}

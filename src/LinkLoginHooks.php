@@ -247,6 +247,18 @@ class LinkLoginHooks {
 
 
 	/**
+	 * Add body class 'linklogin-user' if current user is LinkLogin user
+	 *
+	 * @return void
+	 */
+	public static function onSkinTweekiAdditionalBodyClasses( $skin, &$additionalBodyClasses ) {
+		if( LinkLogin::isLinkLoginUser( $skin->getUser()->getId() ) ) {
+			$additionalBodyClasses[] = 'linklogin-user';
+		}
+	}
+
+
+	/**
 	 * Parser function {{#linklogin-recipients:}}
 	 * 
 	 * Return list of a mailing's recpients. Parameters:

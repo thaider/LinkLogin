@@ -32,8 +32,8 @@
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onLoadExtensionSchemaUpdates",
 		"ParserFirstCallInit":"MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onParserFirstCallInit",
 		"BeforePageDisplay": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onBeforePageDisplay",
-		"getUserPermissionsErrors": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::ongetUserPermissionsErrors"
-
+		"getUserPermissionsErrors": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::ongetUserPermissionsErrors",
+		"SkinTweekiAdditionalBodyClasses": "MediaWiki\\Extension\\LinkLogin\\LinkLoginHooks::onSkinTweekiAdditionalBodyClasses"
 	},
 	"ResourceModules": {
 		"ext.linklogin": {
