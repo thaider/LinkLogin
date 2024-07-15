@@ -408,7 +408,7 @@ class SpecialMailings extends SpecialPage {
 		if( is_null( $title ) ) {
 			$title = Title::newMainPage();
 		}
-		$opt   = new ParserOptions;
+		$opt   = ParserOptions::newFromContext( self::getContext() );
 		
 		foreach( $recipients as $recipient ) {
 			if( in_array( $recipient->user_name, $selected_recipients ) ) {
@@ -614,7 +614,7 @@ class SpecialMailings extends SpecialPage {
 		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
 		$parser = \MediaWiki\MediaWikiServices::getInstance()->getParser();
 		$title = SpecialPage::getTitleFor( 'Mailings' );
-		$opt   = new ParserOptions;
+		$opt   = ParserOptions::newFromContext( self::getContext() );
 		$list = false;
 		foreach( explode( "\n", $users ) as $line ) {
 			if( $line == '' ) {
