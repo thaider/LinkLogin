@@ -237,6 +237,9 @@ class LinkLoginHooks {
 		}
 		$linkLoginUser = LinkLogin::isLinkLoginUser( $user->getId() );
 		if( $linkLoginUser && $action == 'edit' ) {
+			if( !$title->canExist() ) {
+				return false;
+			}
 			$titleId = $title->getId();
 			$categories = LinkLogin::getLinkLoginCategoriesForUser( $user );
 			$pages = LinkLogin::getPagesForUser( $user->getId(), $categories );
