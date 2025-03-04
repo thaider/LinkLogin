@@ -28,7 +28,7 @@
 	"linklogin-filter-has-nothing": "Has nothing",
 	"linklogin-filter-property": "User property",
 	"linklogin-filter-delete": "Delete filter",
-	"linklogin-user-create-short": "Create",
+	"linklogin-user-create-short": "Create user",
 	"linklogin-user-create-long": "Create new user:",
 	"linklogin-user-create-placeholder": "New User",
 	"linklogin-user-error-empty": "Username must not be empty!",

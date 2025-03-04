@@ -285,13 +285,16 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-associated") . ' ' . wfMessage("linklogin-categories"). ': ');
 		foreach($assoc_categories as $assoc_cat){
 			$url = SpecialPage::getTitleFor( 'LinkLoginPages' )->getLocalURL() . '/' . $assoc_cat;
+			if( wfMessage( 'category-' . strtolower( $assoc_cat ) )->exists() ) {
+				$assoc_cat = wfMessage( 'category-' . strtolower( $assoc_cat ) )->text();
+			}
 			$output->addHTML('<a href="' . $url . '">' . $assoc_cat . '</a>' . ' ');
 		}
 		$output->addHTML('</div>');
 
 		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-filter") . ': ');
 		//toggle for has or has not user_property
-		$output->addHTML('<div id="filter-toggle-buttongroup" class="btn-group btn-group-toggle mr-2" data-toggle="buttons">');
+		$output->addHTML('<div id="filter-toggle-buttongroup" class="btn-group btn-group-toggle me-2" data-bs-toggle="buttons">');
 		$output->addHTML('<label id="has-button" class="btn btn-secondary btn-sm' . ($filter_noentries ? '">' : ($filter_invert ? '">' : ' active">')));
     	$output->addHTML('<input type="radio" name="options" id="option-has" autocomplete="off" checked>' . wfMessage("linklogin-filter-has") . '</label>');
   		$output->addHTML('<label id="has-not-button" class="btn btn-secondary btn-sm' . ($filter_invert ? ' active">' : '">'));
@@ -303,7 +306,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 		//dropdown for filtering by user_property
 		$output->addHTML('<div class="btn-group">');
 		$output->addHTML('<div class="dropdown">');
-		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? (wfMessage('linklogin-pref-' . $query_filter)->exists() ? wfMessage('linklogin-pref-' . $query_filter) : ucfirst($query_filter)) : wfMessage("linklogin-filter-property")) . '</button>');
+		$output->addHTML('<button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="user_properties" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . ($query_filter ? (wfMessage('linklogin-pref-' . $query_filter)->exists() ? wfMessage('linklogin-pref-' . $query_filter) : ucfirst($query_filter)) : wfMessage("linklogin-filter-property")) . '</button>');
 		$output->addHTML('<div class="dropdown-menu" id="dropdown-menu-user-properties" aria-labelledby="user_properties">');
 		foreach( $preferences as $preference ) {
 			$url = SpecialPage::getTitleFor( 'LinkLoginUsers' )->getLocalURL() . '/' . $old_par . '?filter=' . $preference;
@@ -333,7 +336,7 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				$user->email = $uom->getOption( $user_mail, 'email');
 				$user_name = str_replace(' ', '_', $user->user_name);
 				$output->addHTML('<tr id=' . '"' . $user_name . '"' . '>');
-				$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
+				$output->addHTML('<td>' . '<span>' . $user->user_name . '</span>' . ' ' . '<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-bs-toggle="tooltip"></i></a>');
 				$output->addHTML('<div class="linklogin-user-properties">');
 				if( !isset( $user_properties[$user->user_id] ) ) {
 					$user_properties[$user->user_id]['email'] = $user->email;
@@ -354,19 +357,19 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				$output->addHTML('</td>');
 				$output->addHTML('<td id="' . $user_name . 'Pages">');
 				if( array_key_exists($user->user_name, $linked_pages)){
-					$output->addHTML('<ul id="' . $user_name . 'List">');
+					$output->addHTML('<ul id="' . $user_name . 'List" class="ps-0">');
 					foreach( $linked_pages[$user->user_name] as $id_key => $linked_page){
 						if( in_array($linked_page['displaytitle'], $filtered_titles) ) {
 							$output->addHTML('<li id="listitem-' . $id_key . '">');
 							$output->addHTML('<span data-title="' . $linked_page['title'] . '"><a href="../' . htmlspecialchars($linked_page['title']) . '" target="_blank">' . $linked_page['displaytitle'] . '</a></span>');
-							$output->addHTML('<a href="#" class="unlink pages ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
+							$output->addHTML('<a href="#" class="unlink pages ms-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-bs-toggle="tooltip"></i></a>');
 							$output->addHTML('</li>');
 						}
 					}
 					$output->addHTML('</ul>');
 				}
 				$output->addHTML('<div class="dropdown">');
-				$output->addHTML('<a class="dropdown-toggle pages" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
+				$output->addHTML('<a class="dropdown-toggle pages" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
 				$output->addHTML(wfMessage('linklogin-assign-page')->text());
 				$output->addHTML('</a>');
 				$output->addHTML('<div class="dropdown-menu pageslist" aria-labelledby="dropdownMenuButton">');
@@ -386,10 +389,10 @@ class SpecialLinkLoginUsers extends SpecialPage {
 				$output->addHTML('<td class="semorg-showedit">');
 				if( !is_null($loginpage) &&  !is_null($user->user_email_token)) {
 					$link = $this->createCustomMailLink($loginpage,$user);
-					$output->addHTML('<a id="' . $link . '" class="copy clipboard mr-2" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
+					$output->addHTML('<a id="' . $link . '" class="copy clipboard me-2" href="#" title="' . wfMessage('linklogin-clipboard')->text() . '" data-bs-toggle="tooltip"><i class="fa fa-clipboard"></i></a>');
 					if( !empty($user->email) ){
 						$encoded_link = urlencode($link);
-						$output->addHTML('<a href="mailto:' . $user->email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
+						$output->addHTML('<a href="mailto:' . $user->email .'?body=' . $encoded_link . '"><i class="fa fa-envelope fa-sm" data-bs-toggle="tooltip" title="' . wfMessage('linklogin-mail-link')->text() . '"></i></a>');
 					}
 				}
 				$output->addHTML('</td>');

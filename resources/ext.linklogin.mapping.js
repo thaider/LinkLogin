@@ -257,14 +257,14 @@ jQuery( function( $ ) {
 	}
 
 	function insertUser(user, page){
-		$("#"+page+"User").replaceWith('<td id="' + page + 'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users ml-2"><i class="fa fa-times"></i></a></td>');
+		$("#"+page+"User").replaceWith('<td id="' + page + 'User"><span>'+user+'</span>'+' '+'<a href="#"><i class="fa fa-pen edit"></i></a>'+'<a href="#" class="unlink users ms-2"><i class="fa fa-times"></i></a></td>');
 	}
 
 	function insertPage(user, page_name, destination, page, page_title){
 		if ( $("#"+user+"List").length ) {
-			$(destination).children('ul').append('<li id="listitem-' + page + '"><span data-title="' + page_title + '"><a href="../' + page_title + '" target="_blank">' + page_name + '</a></span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li>');
+			$(destination).children('ul').append('<li id="listitem-' + page + '"><span data-title="' + page_title + '"><a href="../' + page_title + '" target="_blank">' + page_name + '</a></span><a href="#" class="unlink pages ms-2"><i class="fa fa-times"></i></a></li>');
 		} else {
-			$(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span data-title="' + page_title + '"><a href="../' + page_title + '" target="_blank">' + page_name + '</a></span><a href="#" class="unlink pages ml-2"><i class="fa fa-times"></i></a></li></ul>');
+			$(destination).prepend('<ul id="' + user + 'List"><li id="listitem-' + page + '"><span data-title="' + page_title + '"><a href="../' + page_title + '" target="_blank">' + page_name + '</a></span><a href="#" class="unlink pages ms-2"><i class="fa fa-times"></i></a></li></ul>');
 		}
 		$("[id=dropdownitem-" + page + "]").remove();
 		checkDropdownVisibility();

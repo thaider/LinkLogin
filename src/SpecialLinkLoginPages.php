@@ -46,6 +46,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 		foreach( $categories as $category ) {
 			$output->addHTML('<tr>');
 			$url = SpecialPage::getTitleFor( 'LinkLoginPages' )->getLocalURL() . '/' . $category;
+			if( wfMessage( 'category-' . strtolower( $category ) )->exists() ) {
+				$category = wfMessage( 'category-' . strtolower( $category ) )->text();
+			}
 			$output->addHTML('<td><a href="' . $url . '">' . $category . '</a></td>');
 			$output->addHTML('</tr>');
 		}
@@ -125,6 +128,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 		$assoc_groups = LinkLogin::getLinkLoginGroupsByCategory($par);
 
+		if( wfMessage( 'category-' . strtolower( $par ) )->exists() ) {
+			$par = wfMessage( 'category-' . strtolower( $par ) )->text();
+		}
 		$output->setPageTitle( $this->getDescription() . ' (' . wfMessage('linklogin-category') . ': '  . $par . ')');
 		$output->addHTML('<div class="col text-center"><a href="' . SpecialPage::getTitleFor( 'LinkLoginPages' )->getLocalURL() . '"><button type="button" class="btn btn-secondary translate-middle">' . wfMessage('linklogin-overview') . '</button></a></div>');
 		$output->addHTML('<div class="col" style="margin: 10px 0px">' . wfMessage("linklogin-associated") . ' ' . wfMessage("linklogin-groups"). ': ');
@@ -162,8 +168,8 @@ class SpecialLinkLoginPages extends SpecialPage {
 			if( !empty( $user ) ) {
 				$output->addHTML('<td id=' . $page->id . 'User' . '>');
 				$output->addHTML('<span>' . $user . '</span>' . " ");
-				$output->addHTML('<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-toggle="tooltip"></i></a>');
-				$output->addHTML('<a href="#" class="unlink users ml-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-toggle="tooltip"></i></a>');
+				$output->addHTML('<a href="#"><i class="fa fa-pen edit" title="' . wfMessage('linklogin-edit-user') . '" data-bs-toggle="tooltip"></i></a>');
+				$output->addHTML('<a href="#" class="unlink users ms-2"><i class="fa fa-times" title="' . wfMessage('linklogin-unlink') . '" data-bs-toggle="tooltip"></i></a>');
 				$output->addHTML('</td>');
 			} else {             
 				foreach( $groups as $group ) {
@@ -184,7 +190,7 @@ class SpecialLinkLoginPages extends SpecialPage {
 				$output->addHTML('<td id=' . $page->id . 'User' . '>');
 				$output->addHTML('<container id='. $page->id . 'Fragment>');
 				$output->addHTML('<div class="dropdown">');
-				$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
+				$output->addHTML('<a class="dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">');
 				$output->addHTML(wfMessage("linklogin-assign-user")->text());
 				$output->addHTML('</a>');
 				$output->addHTML('<div class="dropdown-menu userlist" aria-labelledby="dropdownMenuButton">');
@@ -195,9 +201,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 				// Show form to create new user, if user has 'createaccount' right
 				if( $this->getUser()->isAllowed( 'createaccount' ) ) {
-					$output->addHTML('<form class="linklogin-user-create user-create form-inline" novalidate>');
-					$output->addHTML('<input id="' . $page->id .'Inputfield" class="username form-control mr-1" placeholder="' . wfMessage("linklogin-user-create-placeholder")->text() . '">');
-					$output->addHTML('<button type="submit" class="btn btn-primary create">' . wfMessage("linklogin-user-create-short")->text() . '</button>');
+					$output->addHTML('<form class="linklogin-user-create user-create row row-cols-lg-auto g-3 align-items-center mt-1" novalidate>');
+					$output->addHTML('<div class="col-12"><input id="' . $page->id .'Inputfield" class="username form-control form-control-sm mr-1" value="' . $page->displaytitle . '"></div>');
+					$output->addHTML('<div class="col-12"><button type="submit" class="btn btn-secondary btn-sm create">' . wfMessage("linklogin-user-create-short")->text() . '</button></div>');
 					$output->addHTML('<small id="' . $page->id . 'userError" class="userError text-danger"></small>');
 					$output->addHTML('</form>');
 				}
