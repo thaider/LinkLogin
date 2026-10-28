@@ -23,8 +23,9 @@ class SpecialEditMailing extends SpecialPage {
 		$this->setHeaders();
 
 		if( isset( $par ) ) {
-			$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-			$dbr = $lb->getConnectionRef( DB_REPLICA );
+			$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+			$dbr = $dbProvider->getReplicaDatabase();
+
 			$mailing = $dbr->newSelectQueryBuilder()
 				->select( ['*'] )
 				->from( 'll_mailing' )
@@ -152,8 +153,10 @@ class SpecialEditMailing extends SpecialPage {
 	 */
 	function create( $formData ) {
 		$output = $this->getOutput();
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
+
 		$res = $dbw->insert( 
 			'll_mailing',
 			[
@@ -186,8 +189,10 @@ class SpecialEditMailing extends SpecialPage {
 	 */
 	function edit( $formData ) {
 		$output = $this->getOutput();
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
+
 		$conds = ['ll_mailing_id' => $formData['mailing']];
 		$res = $dbw->update( 
 			'll_mailing',

@@ -41,8 +41,9 @@ class SpecialMailings extends SpecialPage {
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 		$output->addWikiTextAsInterface('<div class="mb-4">[[Special:EditMailing|<span class="btn btn-primary">' . wfMessage('linklogin-create')->text() . '</span>]]</div>');
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$mailings = $dbr->newSelectQueryBuilder()
 			->select(['ll_mailing_id','ll_mailing_timestamp','ll_mailing_title','ll_mailing_subject','ll_mailing_subjecttemplate','ll_mailing_template','ll_mailing_group','ll_mailing_loginpage', 'll_mailing_user'])
 			->from( 'll_mailing' )
@@ -133,8 +134,8 @@ class SpecialMailings extends SpecialPage {
 		$notincludedCount = 0;
 		$exceptedCount = 0;
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
 		$mailing = $dbr->newSelectQueryBuilder()
 			->select( '*' )
 			->from( 'll_mailing' )
@@ -392,8 +393,9 @@ class SpecialMailings extends SpecialPage {
 
 		$counter = 0;
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$sent = $dbr->newSelectQueryBuilder()
 			->select( 'll_mailinglog_user' )
 			->from( 'll_mailinglog' )
@@ -454,7 +456,7 @@ class SpecialMailings extends SpecialPage {
 						}
 						die(var_dump( $errors ) );
 					} else {
-						$dbw = $lb->getConnectionRef( DB_PRIMARY );
+						$dbw = $dbProvider->getPrimaryDatabase();
 						$res = $dbw->insert( 
 							'll_mailinglog',
 							[
@@ -492,8 +494,9 @@ class SpecialMailings extends SpecialPage {
 
 		$counter = 0;
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$sent = $dbr->newSelectQueryBuilder()
 			->select( 'll_mailinglog_user' )
 			->from( 'll_mailinglog' )
@@ -505,7 +508,7 @@ class SpecialMailings extends SpecialPage {
 			if( in_array( $recipient->user_name, $selected_recipients ) ) {
 				$user = User::newFromName( $recipient->user_name );
 				if (!in_array($user->getId(),$sent)){
-					$dbw = $lb->getConnectionRef( DB_PRIMARY );
+					$dbw = $dbProvider->getPrimaryDatabase();
 					$res = $dbw->insert( 
 						'll_mailinglog',
 						[
@@ -542,8 +545,9 @@ class SpecialMailings extends SpecialPage {
 
 		$counter = 0;
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
+
 		$conds = [
 			'll_mailinglog_mailing' => $mailing->ll_mailing_id,
 			'll_mailinglog_user' => $selected_recipients

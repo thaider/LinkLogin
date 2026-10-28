@@ -19,8 +19,9 @@ class SpecialLoginLog extends SpecialPage {
 
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$loginlogs = $dbr->newSelectQueryBuilder()
 			->select( ['ll_loginlog_hash','ll_loginlog_user','ll_loginlog_timestamp'] )
 			->from( 'll_loginlog' )

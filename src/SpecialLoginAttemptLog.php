@@ -18,8 +18,9 @@ class SpecialLoginAttemptLog extends SpecialPage {
 
 		$output->addWikiTextAsInterface('{{#tweekihide:sidebar-right}}');
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$attemptlogs = $dbr->newSelectQueryBuilder()
 			->select( ['ll_attemptlog_hash','ll_attemptlog_ip','ll_attemptlog_timestamp'] )
 			->from( 'll_attemptlog' )

@@ -19,8 +19,8 @@ class LinkLogin {
 	public static function populateLoginTokens($par = NULL) {
 		$groups = self::getLinkLoginGroups();
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
 
 		$conds = [ 
 			'user_email_token_expires' => null,
@@ -43,7 +43,7 @@ class LinkLogin {
 			->fetchFieldValues();
 
 		if( count( $users ) > 0 ) {
-			$dbw = $lb->getConnectionRef( DB_PRIMARY );
+			$dbw = $dbProvider->getPrimaryDatabase();
 			$set = [ 'user_email_token = MD5( rand() )' ];
 			$conds = [ 
 				'user_id' => $users,
@@ -78,8 +78,9 @@ class LinkLogin {
 
 		$token = 'created';
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
+
 		$dbw->update( 'user',
 			[ /* SET */
 				'user_email_token = MD5( rand() )',
@@ -106,8 +107,9 @@ class LinkLogin {
 	public static function getUserFromToken( $token ) {
 		$groups = self::getLinkLoginGroups();
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$userId = $dbr->newSelectQueryBuilder()
 			->select( 'user_id' )
 			->from( 'user' )
@@ -155,8 +157,9 @@ class LinkLogin {
 			return [];
 		}
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$LinkLoginUsers = $dbr->newSelectQueryBuilder()
 			->select( [ 
 				'user_name', 
@@ -199,8 +202,9 @@ class LinkLogin {
 			return [];
 		}
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$groupUsers = $dbr->newSelectQueryBuilder()
 			->select( 'ug_user' )
 			->from( 'user_groups' )
@@ -338,8 +342,9 @@ class LinkLogin {
 	 * @return Array of pages
 	 */
 	public static function getPagesForUser( $user_id, $categories ) {
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$pages = $dbr->newSelectQueryBuilder()
 			->select( ['page_title', 'page_id'] )
 			->from( 'll_mapping' )
@@ -364,8 +369,9 @@ class LinkLogin {
 	 * @param String $hash Hash
 	 */
 	public static function logLinkLogin($user, $hash) {
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
+
 		$res = $dbw->insert( 
 			'll_loginlog',
 			[
@@ -384,8 +390,10 @@ class LinkLogin {
 	 */
 	public static function logLinkLoginAttempt($ip, $hash) {
 		$time = time();
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbw = $lb->getConnectionRef( DB_PRIMARY );
+
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
+
 		$res = $dbw->insert( 
 			'll_attemptlog',
 			[
@@ -402,8 +410,7 @@ class LinkLogin {
 
 			//Check if $wgLinkLoginAttemptlogThreshold is met
 			if ($id % $threshold == 0) {
-				$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-				$dbr = $lb->getConnectionRef( DB_REPLICA );
+				$dbr = $dbProvider->getReplicaDatabase();
 				$res = $dbr->newSelectQueryBuilder()
 					->select( ['ll_attemptlog_timestamp','ll_attemptlog_notification'] )
 					->from( 'll_attemptlog' )
@@ -453,7 +460,6 @@ class LinkLogin {
 						}
 						die(var_dump( $errors ) );
 					} else {
-						$dbw = $lb->getConnectionRef( DB_PRIMARY );
 						$res = $dbw->update( 
 							'll_attemptlog',
 							['ll_attemptlog_notification' => true],

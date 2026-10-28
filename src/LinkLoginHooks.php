@@ -286,8 +286,9 @@ class LinkLoginHooks {
 
 		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
 		
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$conds = [ 
 			'll_mailinglog_mailing' => $options['mailing'],
 		];
@@ -398,8 +399,9 @@ class LinkLoginHooks {
 			return "option must be set";
 		}
 
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$delimiter = $GLOBALS['wgLinkLoginDelimiter'];
 
 		$options = (array) $options;
@@ -501,8 +503,9 @@ class LinkLoginHooks {
 		$filtered = explode( '<SEP>', $result );
 
 		//Get all users with the specific filter
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnection( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$users = $dbr->newSelectQueryBuilder()
   			->select('user_name')
 			->from('user')

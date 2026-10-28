@@ -98,8 +98,9 @@ class SpecialLinkLoginPages extends SpecialPage {
 		}
 
 		//get Pages
-		$lb = MediaWikiServices::getInstance()->getDBLoadBalancer();
-		$dbr = $lb->getConnectionRef( DB_REPLICA );
+		$dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbr = $dbProvider->getReplicaDatabase();
+
 		$titles = $dbr->newSelectQueryBuilder()
 			->select( ['page_title', 'page_id'] )
 			->from( 'categorylinks' )
@@ -150,7 +151,6 @@ class SpecialLinkLoginPages extends SpecialPage {
 
 		//get Users corresponding to pages 
 		foreach( $pages as $page ) {
-			$dbr = $lb->getConnectionRef( DB_REPLICA );
 			$user = $dbr->newSelectQueryBuilder()
 				->select( ['user_name'] )
 				->from( 'page' )
@@ -173,7 +173,6 @@ class SpecialLinkLoginPages extends SpecialPage {
 				$output->addHTML('</td>');
 			} else {             
 				foreach( $groups as $group ) {
-					$dbr = $lb->getConnectionRef( DB_REPLICA );
 					$users = $dbr->newSelectQueryBuilder()
 						->select( ['user_name'] )
 						->from( 'user_groups' )
