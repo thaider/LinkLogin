@@ -119,7 +119,11 @@ class LinkLoginHooks {
 		$user->loadFromId();
 		$user->saveSettings();
 		$user->setCookies(null, null, true);
-		\Hooks::run( 'UserLoginComplete', [ &$user, "" ] );
+		$injectHtml = '';
+		MediaWikiServices::getInstance()->getHookContainer()->run(
+			'UserLoginComplete',
+			[ &$user, &$injectHtml, false ]
+		);
 
 		LinkLogin::logLinkLogin( $newUserId, $token );
 
